@@ -17,8 +17,25 @@ class OrderController extends Controller
 {
     public function index(): View
     {
+        $filters = request()->only(['search', 'from', 'to', 'status']);
+
         return view('orders.index', [
-            'orders' => Order::with('items.product.companyInfo')->latest()->get(),
+            'orders' => Order::with('items.product.companyInfo')
+                ->when($filters['search'] ?? null, function ($query, string $search): void {
+                    $query->where(function ($query) use ($search): void {
+                        $query
+                            ->where('order_number', 'like', "%{$search}%")
+                            ->orWhere('customer_name', 'like', "%{$search}%")
+                            ->orWhere('customer_phone', 'like', "%{$search}%");
+                    });
+                })
+                ->when($filters['from'] ?? null, fn ($query, string $from) => $query->whereDate('created_at', '>=', $from))
+                ->when($filters['to'] ?? null, fn ($query, string $to) => $query->whereDate('created_at', '<=', $to))
+                ->when($filters['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
+                ->latest()
+                ->get(),
+            'statuses' => Order::STATUSES,
+            'filters' => $filters,
         ]);
     }
 
@@ -71,6 +88,24 @@ class OrderController extends Controller
         return redirect()
             ->route('orders.index')
             ->with('status', "Order {$order->order_number} updated successfully.");
+    }
+
+    public function updateStatus(Request $request, Order $order): RedirectResponse
+    {
+        $validated = $request->validate([
+            'status' => ['required', Rule::in(Order::STATUSES)],
+        ]);
+
+        $order->update($validated);
+
+        return back()->with('status', "Order {$order->order_number} status updated.");
+    }
+
+    public function invoice(Order $order): View
+    {
+        return view('orders.invoice', [
+            'order' => $order->load('items.product.companyInfo'),
+        ]);
     }
 
     public function apiStore(Request $request): JsonResponse

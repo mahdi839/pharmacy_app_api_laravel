@@ -9,9 +9,10 @@ class Order extends Model
 {
     public const STATUSES = [
         'pending',
-        'confirmed',
+        'processing',
+        'on delivery',
         'delivered',
-        'cancelled',
+        'completed',
     ];
 
     protected $fillable = [
