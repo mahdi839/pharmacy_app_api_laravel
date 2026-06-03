@@ -1,19 +1,19 @@
 @extends('layouts.admin')
 
 @section('section_label', 'Products')
-@section('section_hint', 'Add medicine details so the mobile app can show them.')
+@section('section_hint', 'Update medicine details used by the mobile app.')
 
 @section('content')
     <div class="toolbar">
         <div>
-            <h1 class="title">Create Product</h1>
-            <p class="subtitle">Add medicine details for the mobile app product list.</p>
+            <h1 class="title">Edit Product</h1>
+            <p class="subtitle">{{ $product->name }} from {{ $product->company }}.</p>
         </div>
         <a class="btn btn-light" href="{{ route('products.index') }}">Back to Products</a>
     </div>
 
     @include('products.form', [
-        'action' => route('products.store'),
-        'method' => 'POST',
+        'action' => route('products.update', $product),
+        'method' => 'PUT',
     ])
 @endsection
