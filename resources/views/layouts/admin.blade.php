@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ config('app.name') }}</title>
+    @stack('styles')
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; font-family: Arial, sans-serif; background: #f5f7fb; color: #1f2933; }
@@ -74,8 +75,8 @@
 
             <nav class="menu">
                 <a class="menu-link {{ request()->routeIs('orders.*') || request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('orders.index') }}">Orders</a>
-                <a class="menu-link {{ request()->routeIs('products.*') ? 'active' : '' }}" href="{{ route('products.index') }}">Products</a>
                 <a class="menu-link {{ request()->routeIs('companies.*') ? 'active' : '' }}" href="{{ route('companies.index') }}">Companies</a>
+                <a class="menu-link {{ request()->routeIs('products.*') ? 'active' : '' }}" href="{{ route('products.index') }}">Products</a>
             </nav>
 
             <div class="sidebar-footer">
@@ -100,5 +101,6 @@
             </main>
         </div>
     </div>
+    @stack('scripts')
 </body>
 </html>

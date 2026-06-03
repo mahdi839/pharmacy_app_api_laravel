@@ -19,8 +19,7 @@
         </div>
         <div class="field">
             <label for="company">Company Name</label>
-            <input id="company_search" type="search" placeholder="Search company">
-            <select id="company" name="company_id" required>
+            <select id="company" name="company_id" required placeholder="Search and select company">
                 <option value="">Select company</option>
                 @foreach ($companies as $company)
                     <option value="{{ $company->id }}" @selected((string) old('company_id', $product?->company_id) === (string) $company->id)>
@@ -62,21 +61,22 @@
     </div>
 </form>
 
-<script>
-    const companySearch = document.getElementById('company_search');
-    const companySelect = document.getElementById('company');
-    const companyOptions = Array.from(companySelect.options);
+@push('styles')
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/css/tom-select.css" rel="stylesheet">
+    <style>
+        .ts-wrapper.single .ts-control { min-height: 42px; border-color: #cfd8e3; border-radius: 6px; padding: 8px 12px; }
+        .ts-wrapper.focus .ts-control { border-color: #1a7f5a; box-shadow: 0 0 0 3px rgba(26, 127, 90, 0.12); }
+    </style>
+@endpush
 
-    companySearch?.addEventListener('input', () => {
-        const keyword = companySearch.value.trim().toLowerCase();
-
-        companyOptions.forEach((option) => {
-            if (! option.value) {
-                option.hidden = false;
-                return;
-            }
-
-            option.hidden = ! option.textContent.toLowerCase().includes(keyword);
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/js/tom-select.complete.min.js"></script>
+    <script>
+        new TomSelect('#company', {
+            create: false,
+            maxItems: 1,
+            sortField: { field: 'text', direction: 'asc' },
+            plugins: ['dropdown_input'],
         });
-    });
-</script>
+    </script>
+@endpush
