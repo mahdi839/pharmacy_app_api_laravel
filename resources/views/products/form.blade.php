@@ -6,7 +6,7 @@
     </div>
 @endif
 
-<form class="form" method="POST" action="{{ $action }}">
+<form class="form" method="POST" action="{{ $action }}" enctype="multipart/form-data">
     @csrf
     @if ($method === 'PUT')
         @method('PUT')
@@ -19,7 +19,15 @@
         </div>
         <div class="field">
             <label for="company">Company Name</label>
-            <input id="company" name="company" value="{{ old('company', $product?->company) }}" required>
+            <input id="company_search" type="search" placeholder="Search company">
+            <select id="company" name="company_id" required>
+                <option value="">Select company</option>
+                @foreach ($companies as $company)
+                    <option value="{{ $company->id }}" @selected((string) old('company_id', $product?->company_id) === (string) $company->id)>
+                        {{ $company->name }}
+                    </option>
+                @endforeach
+            </select>
         </div>
         <div class="field">
             <label for="strength">Strength</label>
@@ -42,11 +50,33 @@
             <input id="discount" name="discount" type="number" min="0" max="100" value="{{ old('discount', $product?->discount ?? 0) }}">
         </div>
         <div class="field">
-            <label for="image">Image URL</label>
-            <input id="image" name="image" type="url" value="{{ old('image', $product?->image) }}" placeholder="https://example.com/product.png">
+            <label for="image">Product Image</label>
+            <input id="image" name="image" type="file" accept="image/*">
+            @if ($product?->image)
+                <div class="muted">Current image is already saved.</div>
+            @endif
         </div>
         <div class="field field-full">
             <button class="btn btn-primary" type="submit">{{ $product ? 'Update Product' : 'Create Product' }}</button>
         </div>
     </div>
 </form>
+
+<script>
+    const companySearch = document.getElementById('company_search');
+    const companySelect = document.getElementById('company');
+    const companyOptions = Array.from(companySelect.options);
+
+    companySearch?.addEventListener('input', () => {
+        const keyword = companySearch.value.trim().toLowerCase();
+
+        companyOptions.forEach((option) => {
+            if (! option.value) {
+                option.hidden = false;
+                return;
+            }
+
+            option.hidden = ! option.textContent.toLowerCase().includes(keyword);
+        });
+    });
+</script>

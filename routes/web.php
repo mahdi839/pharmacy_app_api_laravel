@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +22,12 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/products', [ProductController::class, 'store'])->name('products.store');
     Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
     Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
+
+    Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
+    Route::get('/companies/create', [CompanyController::class, 'create'])->name('companies.create');
+    Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
+    Route::get('/companies/{company}/edit', [CompanyController::class, 'edit'])->name('companies.edit');
+    Route::put('/companies/{company}', [CompanyController::class, 'update'])->name('companies.update');
 
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');

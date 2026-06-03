@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Admin;
+use App\Models\Company;
 use App\Models\Product;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -56,9 +57,13 @@ class DatabaseSeeder extends Seeder
                 'discount' => 10,
                 'image' => 'https://placehold.co/300x220/f4f0ff/6546b8.png?text=Maxpro',
             ],
-        ])->each(fn (array $product): Product => Product::updateOrCreate(
-            ['name' => $product['name'], 'company' => $product['company'], 'strength' => $product['strength']],
-            $product,
-        ));
+        ])->each(function (array $product): Product {
+            $company = Company::updateOrCreate(['name' => $product['company']]);
+
+            return Product::updateOrCreate(
+                ['name' => $product['name'], 'company_id' => $company->id, 'strength' => $product['strength']],
+                [...$product, 'company_id' => $company->id],
+            );
+        });
     }
 }

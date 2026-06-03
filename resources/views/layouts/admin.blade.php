@@ -75,6 +75,7 @@
             <nav class="menu">
                 <a class="menu-link {{ request()->routeIs('orders.*') || request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('orders.index') }}">Orders</a>
                 <a class="menu-link {{ request()->routeIs('products.*') ? 'active' : '' }}" href="{{ route('products.index') }}">Products</a>
+                <a class="menu-link {{ request()->routeIs('companies.*') ? 'active' : '' }}" href="{{ route('companies.index') }}">Companies</a>
             </nav>
 
             <div class="sidebar-footer">

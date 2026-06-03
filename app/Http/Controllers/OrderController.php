@@ -18,7 +18,7 @@ class OrderController extends Controller
     public function index(): View
     {
         return view('orders.index', [
-            'orders' => Order::with('items.product')->latest()->get(),
+            'orders' => Order::with('items.product.companyInfo')->latest()->get(),
         ]);
     }
 
@@ -132,7 +132,7 @@ class OrderController extends Controller
             ->groupBy('product_id')
             ->map(fn (Collection $rows): int => $rows->sum('quantity'))
             ->each(function (int $quantity, int|string $productId) use ($order, &$subtotal, &$discountTotal, &$total): void {
-                $product = Product::findOrFail($productId);
+                $product = Product::with('companyInfo')->findOrFail($productId);
                 $lineSubtotal = (float) $product->price * $quantity;
                 $lineDiscount = $lineSubtotal * ($product->discount / 100);
                 $lineTotal = $lineSubtotal - $lineDiscount;
@@ -140,7 +140,7 @@ class OrderController extends Controller
                 $order->items()->create([
                     'product_id' => $product->id,
                     'product_name' => $product->name,
-                    'company' => $product->company,
+                    'company' => $product->companyName(),
                     'strength' => $product->strength,
                     'form' => $product->form,
                     'unit_price' => $product->price,

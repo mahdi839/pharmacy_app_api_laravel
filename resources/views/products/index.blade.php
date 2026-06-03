@@ -40,7 +40,7 @@
                                 </div>
                             </div>
                         </td>
-                        <td>{{ $product->company }}</td>
+                        <td>{{ $product->companyName() }}</td>
                         <td>BDT {{ number_format((float) $product->price, 2) }}</td>
                         <td>{{ $product->stock }}</td>
                         <td>{{ $product->discount }}%</td>
