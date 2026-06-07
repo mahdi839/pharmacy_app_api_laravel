@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\HomeSliderController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReportController;
@@ -24,6 +25,13 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/products', [ProductController::class, 'store'])->name('products.store');
     Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
     Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
+
+    Route::get('/home-sliders', [HomeSliderController::class, 'index'])->name('home-sliders.index');
+    Route::get('/home-sliders/create', [HomeSliderController::class, 'create'])->name('home-sliders.create');
+    Route::post('/home-sliders', [HomeSliderController::class, 'store'])->name('home-sliders.store');
+    Route::get('/home-sliders/{homeSlider}/edit', [HomeSliderController::class, 'edit'])->name('home-sliders.edit');
+    Route::put('/home-sliders/{homeSlider}', [HomeSliderController::class, 'update'])->name('home-sliders.update');
+    Route::delete('/home-sliders/{homeSlider}', [HomeSliderController::class, 'destroy'])->name('home-sliders.destroy');
 
     Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
     Route::get('/companies/create', [CompanyController::class, 'create'])->name('companies.create');

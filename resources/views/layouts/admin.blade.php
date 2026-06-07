@@ -87,6 +87,7 @@
                 <a class="menu-link {{ request()->routeIs('reports.*') ? 'active' : '' }}" href="{{ route('reports.sales') }}">Sales Report</a>
                 <a class="menu-link {{ request()->routeIs('companies.*') ? 'active' : '' }}" href="{{ route('companies.index') }}">Companies</a>
                 <a class="menu-link {{ request()->routeIs('products.*') ? 'active' : '' }}" href="{{ route('products.index') }}">Products</a>
+                <a class="menu-link {{ request()->routeIs('home-sliders.*') ? 'active' : '' }}" href="{{ route('home-sliders.index') }}">Home Sliders</a>
             </nav>
 
             <div class="sidebar-footer">

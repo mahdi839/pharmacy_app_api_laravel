@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
@@ -16,6 +17,7 @@ class Order extends Model
     ];
 
     protected $fillable = [
+        'customer_id',
         'order_number',
         'customer_name',
         'customer_phone',
@@ -41,10 +43,16 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
     public function apiPayload(): array
     {
         return [
             'id' => $this->id,
+            'customer_id' => $this->customer_id,
             'order_number' => $this->order_number,
             'customer_name' => $this->customer_name,
             'customer_phone' => $this->customer_phone,

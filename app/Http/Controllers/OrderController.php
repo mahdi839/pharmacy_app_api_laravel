@@ -110,7 +110,13 @@ class OrderController extends Controller
 
     public function apiStore(Request $request): JsonResponse
     {
-        $order = $this->createOrder($this->validatedOrder($request), 'pending');
+        $customer = CustomerAuthController::customerFromRequest($request);
+
+        if (! $customer) {
+            return response()->json(['message' => 'Please login before placing an order.'], 401);
+        }
+
+        $order = $this->createOrder($this->validatedOrder($request), 'pending', $customer->id);
 
         return response()->json([
             'message' => 'Order placed successfully.',
@@ -139,10 +145,11 @@ class OrderController extends Controller
         ]);
     }
 
-    private function createOrder(array $validated, string $status): Order
+    private function createOrder(array $validated, string $status, ?int $customerId = null): Order
     {
-        return DB::transaction(function () use ($validated, $status): Order {
+        return DB::transaction(function () use ($validated, $status, $customerId): Order {
             $order = Order::create([
+                'customer_id' => $customerId,
                 'order_number' => $this->nextOrderNumber(),
                 'customer_name' => $validated['customer_name'],
                 'customer_phone' => $validated['customer_phone'],
