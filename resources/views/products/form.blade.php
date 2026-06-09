@@ -37,8 +37,12 @@
             <input id="form" name="form" value="{{ old('form', $product?->form) }}" placeholder="Tablet" required>
         </div>
         <div class="field">
-            <label for="price">Price</label>
-            <input id="price" name="price" type="number" min="0" step="0.01" value="{{ old('price', $product?->price) }}" required>
+            <label for="purchase_price">Purchase Price</label>
+            <input id="purchase_price" name="purchase_price" type="number" min="0" step="0.01" value="{{ old('purchase_price', $product?->purchase_price ?? 0) }}" required>
+        </div>
+        <div class="field">
+            <label for="sell_price">Sell Price</label>
+            <input id="sell_price" name="sell_price" type="number" min="0" step="0.01" value="{{ old('sell_price', $product?->sell_price ?? $product?->price) }}" required>
         </div>
         <div class="field">
             <label for="stock">Stock</label>

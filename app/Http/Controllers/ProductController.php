@@ -12,10 +12,22 @@ use Illuminate\View\View;
 
 class ProductController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $filters = $request->only(['name', 'company', 'from', 'to']);
+        $products = Product::with('companyInfo')
+            ->search($filters['name'] ?? null, $filters['company'] ?? null, $filters['from'] ?? null, $filters['to'] ?? null)
+            ->latest()
+            ->get();
+
         return view('products.index', [
-            'products' => Product::with('companyInfo')->latest()->get(),
+            'products' => $products,
+            'filters' => $filters,
+            'totals' => [
+                'products' => $products->count(),
+                'stock' => $products->sum('stock'),
+                'stock_value' => $products->sum(fn (Product $product): float => $product->stockValue()),
+            ],
         ]);
     }
 
@@ -77,7 +89,8 @@ class ProductController extends Controller
             'company_id' => ['required', 'integer', 'exists:companies,id'],
             'strength' => ['required', 'string', 'max:50'],
             'form' => ['required', 'string', 'max:50'],
-            'price' => ['required', 'numeric', 'min:0'],
+            'purchase_price' => ['required', 'numeric', 'min:0'],
+            'sell_price' => ['required', 'numeric', 'min:0'],
             'stock' => ['required', 'integer', 'min:0'],
             'discount' => ['nullable', 'integer', 'min:0', 'max:100'],
             'image' => ['nullable', 'image', 'max:2048'],
@@ -90,6 +103,7 @@ class ProductController extends Controller
 
         $validated['company'] = $company->name;
         $validated['discount'] = (int) ($validated['discount'] ?? 0);
+        $validated['price'] = $validated['sell_price'];
 
         if ($request->hasFile('image')) {
             if ($product?->image && ! str_starts_with($product->image, 'http')) {

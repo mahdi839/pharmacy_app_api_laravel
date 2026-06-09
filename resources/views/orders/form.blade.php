@@ -60,7 +60,7 @@
                         <option value="">Select medicine</option>
                         @foreach ($products as $product)
                             <option value="{{ $product->id }}" @selected((string) $selectedProduct === (string) $product->id)>
-                                {{ $product->name }} - {{ $product->strength }} - BDT {{ number_format((float) $product->price, 2) }}
+                                {{ $product->name }} - {{ $product->strength }} - BDT {{ number_format($product->effectiveSellPrice(), 2) }}
                             </option>
                         @endforeach
                     </select>

@@ -175,7 +175,8 @@ class OrderController extends Controller
             ->map(fn (Collection $rows): int => $rows->sum('quantity'))
             ->each(function (int $quantity, int|string $productId) use ($order, &$subtotal, &$discountTotal, &$total): void {
                 $product = Product::with('companyInfo')->findOrFail($productId);
-                $lineSubtotal = (float) $product->price * $quantity;
+                $unitPrice = $product->effectiveSellPrice();
+                $lineSubtotal = $unitPrice * $quantity;
                 $lineDiscount = $lineSubtotal * ($product->discount / 100);
                 $lineTotal = $lineSubtotal - $lineDiscount;
 
@@ -185,7 +186,7 @@ class OrderController extends Controller
                     'company' => $product->companyName(),
                     'strength' => $product->strength,
                     'form' => $product->form,
-                    'unit_price' => $product->price,
+                    'unit_price' => $unitPrice,
                     'discount_percentage' => $product->discount,
                     'quantity' => $quantity,
                     'line_total' => $lineTotal,

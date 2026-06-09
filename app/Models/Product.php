@@ -16,6 +16,8 @@ class Product extends Model
         'company',
         'strength',
         'form',
+        'purchase_price',
+        'sell_price',
         'price',
         'stock',
         'discount',
@@ -25,6 +27,8 @@ class Product extends Model
     protected function casts(): array
     {
         return [
+            'purchase_price' => 'decimal:2',
+            'sell_price' => 'decimal:2',
             'price' => 'decimal:2',
             'stock' => 'integer',
             'discount' => 'integer',
@@ -41,7 +45,7 @@ class Product extends Model
         return $this->belongsTo(Company::class);
     }
 
-    public function scopeSearch(Builder $query, ?string $name, ?string $company): void
+    public function scopeSearch(Builder $query, ?string $name, ?string $company, ?string $from = null, ?string $to = null): void
     {
         $query
             ->when(trim((string) $name) !== '', function (Builder $query) use ($name): void {
@@ -55,7 +59,19 @@ class Product extends Model
                         })
                         ->orWhere('company', 'like', '%'.trim((string) $company).'%');
                 });
-            });
+            })
+            ->when($from, fn (Builder $query, string $from) => $query->whereDate('created_at', '>=', $from))
+            ->when($to, fn (Builder $query, string $to) => $query->whereDate('created_at', '<=', $to));
+    }
+
+    public function stockValue(): float
+    {
+        return round((float) $this->purchase_price * $this->stock, 2);
+    }
+
+    public function effectiveSellPrice(): float
+    {
+        return (float) ($this->sell_price ?: $this->price);
     }
 
     public function displayImage(): string
@@ -78,7 +94,7 @@ class Product extends Model
 
     public function discountedPrice(): float
     {
-        $price = (float) $this->price;
+        $price = $this->effectiveSellPrice();
 
         return round($price - ($price * ($this->discount / 100)), 2);
     }
@@ -92,9 +108,12 @@ class Product extends Model
             'company' => $this->companyName(),
             'strength' => $this->strength,
             'form' => $this->form,
-            'price' => (float) $this->price,
+            'purchase_price' => (float) $this->purchase_price,
+            'sell_price' => $this->effectiveSellPrice(),
+            'price' => $this->effectiveSellPrice(),
             'discounted_price' => $this->discountedPrice(),
             'stock' => $this->stock,
+            'stock_value' => $this->stockValue(),
             'discount' => $this->discount,
             'image' => $this->displayImage(),
             'created_at' => $this->created_at?->toIso8601String(),

@@ -46,9 +46,12 @@
         .inline-form { margin: 0; display: flex; gap: 8px; align-items: center; }
         .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
         .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 16px; }
+        .stats-grid-wide { grid-template-columns: repeat(7, minmax(0, 1fr)); }
         .stat-card { background: #fff; border: 1px solid #e3e8ef; border-radius: 8px; padding: 16px; }
         .stat-label { color: #667085; font-size: 12px; font-weight: 800; text-transform: uppercase; }
         .stat-value { color: #173d31; font-size: 24px; font-weight: 900; margin-top: 8px; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+        .panel-heading { border-bottom: 1px solid #edf1f5; font-size: 14px; font-weight: 900; padding: 14px 16px; }
         .product-cell { display: flex; align-items: center; gap: 12px; min-width: 240px; }
         .thumb { width: 54px; height: 54px; border-radius: 6px; object-fit: cover; background: #eef4f1; border: 1px solid #e3e8ef; }
         .form { background: #fff; border: 1px solid #e3e8ef; border-radius: 8px; padding: 22px; max-width: 880px; }
@@ -68,7 +71,7 @@
             .sidebar-footer { margin-top: 0; }
             .topbar, .toolbar { align-items: flex-start; flex-direction: column; }
             .page { padding: 20px; }
-            .form-grid, .item-grid, .filters, .stats-grid { grid-template-columns: 1fr; }
+            .form-grid, .item-grid, .filters, .stats-grid, .stats-grid-wide, .dashboard-grid { grid-template-columns: 1fr; }
             table { display: block; overflow-x: auto; white-space: nowrap; }
         }
     </style>
@@ -82,7 +85,8 @@
             </div>
 
             <nav class="menu">
-                <a class="menu-link {{ request()->routeIs('orders.*') || request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('orders.index') }}">Orders</a>
+                <a class="menu-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">Dashboard Overview</a>
+                <a class="menu-link {{ request()->routeIs('orders.*') ? 'active' : '' }}" href="{{ route('orders.index') }}">Orders</a>
                 <a class="menu-link {{ request()->routeIs('customers.*') ? 'active' : '' }}" href="{{ route('customers.index') }}">Customers</a>
                 <a class="menu-link {{ request()->routeIs('reports.*') ? 'active' : '' }}" href="{{ route('reports.sales') }}">Sales Report</a>
                 <a class="menu-link {{ request()->routeIs('companies.*') ? 'active' : '' }}" href="{{ route('companies.index') }}">Companies</a>
