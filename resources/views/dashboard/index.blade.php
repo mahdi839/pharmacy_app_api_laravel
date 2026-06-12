@@ -35,16 +35,8 @@
             ['label' => 'Pending Sell', 'value' => 'BDT '.number_format($salesStats['pending'], 2), 'icon' => 'orders'],
         ];
 
-        $statusTotal = max(1, $statusBreakdown->sum('count'));
-        $cursor = 0;
-        $segments = $statusBreakdown->map(function ($status) use (&$cursor, $statusTotal) {
-            $start = round($cursor, 2);
-            $cursor += ($status['count'] / $statusTotal) * 100;
-            $end = round($cursor, 2);
-
-            return "{$status['color']} {$start}%, {$status['color']} {$end}%";
-        })->implode(', ');
-        $pieStyle = $statusBreakdown->sum('count') > 0 ? "background: conic-gradient({$segments});" : 'background: #edf2f7;';
+        $statusTotal = (int) $statusBreakdown->sum('count');
+        $pieOffset = 0;
         $maxDailySell = max(1, (float) $dailySales->max('total_sell'));
     @endphp
 
@@ -83,7 +75,33 @@
         <section class="panel chart-panel">
             <h2 class="chart-title">Order Status Mix</h2>
             <div class="pie-wrap">
-                <div class="pie-chart" style="{{ $pieStyle }}"></div>
+                <svg class="pie-chart" viewBox="0 0 120 120" role="img" aria-label="Order status pie chart">
+                    <circle class="pie-bg" cx="60" cy="60" r="45"></circle>
+                    @if ($statusTotal > 0)
+                        @foreach ($statusBreakdown as $status)
+                            @if ($status['count'] > 0)
+                                @php
+                                    $percent = round(($status['count'] / $statusTotal) * 100, 3);
+                                    $dashOffset = -$pieOffset;
+                                    $pieOffset += $percent;
+                                @endphp
+                                <circle
+                                    class="pie-segment"
+                                    cx="60"
+                                    cy="60"
+                                    r="45"
+                                    pathLength="100"
+                                    stroke="{{ $status['color'] }}"
+                                    stroke-dasharray="{{ $percent }} {{ 100 - $percent }}"
+                                    stroke-dashoffset="{{ $dashOffset }}"
+                                ></circle>
+                            @endif
+                        @endforeach
+                    @endif
+                    <circle cx="60" cy="60" r="28" fill="#fff"></circle>
+                    <text x="60" y="58">{{ number_format($statusTotal) }}</text>
+                    <text x="60" y="72" style="font-size: 8px; fill: #667085;">Orders</text>
+                </svg>
                 <div class="legend">
                     @foreach ($statusBreakdown as $status)
                         <div class="legend-row">

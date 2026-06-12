@@ -63,7 +63,10 @@
         .chart-panel { padding: 18px; }
         .chart-title { color: #173d31; font-size: 15px; font-weight: 900; margin: 0 0 16px; }
         .pie-wrap { align-items: center; display: grid; gap: 18px; grid-template-columns: 170px 1fr; }
-        .pie-chart { aspect-ratio: 1; border-radius: 50%; box-shadow: inset 0 0 0 18px #fff, 0 18px 36px rgba(15, 23, 42, .08); width: 170px; }
+        .pie-chart { aspect-ratio: 1; display: block; filter: drop-shadow(0 18px 22px rgba(15, 23, 42, .08)); width: 170px; }
+        .pie-chart .pie-bg { fill: none; stroke: #edf2f7; stroke-width: 18; }
+        .pie-chart .pie-segment { fill: none; stroke-linecap: butt; stroke-width: 18; transform: rotate(-90deg); transform-origin: 50% 50%; }
+        .pie-chart text { fill: #173d31; font-size: 11px; font-weight: 900; text-anchor: middle; }
         .legend { display: grid; gap: 9px; }
         .legend-row { align-items: center; display: flex; gap: 9px; justify-content: space-between; }
         .legend-name { align-items: center; display: flex; gap: 8px; text-transform: capitalize; }
