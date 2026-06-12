@@ -38,9 +38,11 @@
         $statusTotal = max(1, $statusBreakdown->sum('count'));
         $cursor = 0;
         $segments = $statusBreakdown->map(function ($status) use (&$cursor, $statusTotal) {
-            $start = $cursor;
+            $start = round($cursor, 2);
             $cursor += ($status['count'] / $statusTotal) * 100;
-            return "{$status['color']} {$start}% {$cursor}%";
+            $end = round($cursor, 2);
+
+            return "{$status['color']} {$start}%, {$status['color']} {$end}%";
         })->implode(', ');
         $pieStyle = $statusBreakdown->sum('count') > 0 ? "background: conic-gradient({$segments});" : 'background: #edf2f7;';
         $maxDailySell = max(1, (float) $dailySales->max('total_sell'));
