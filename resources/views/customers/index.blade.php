@@ -11,6 +11,17 @@
         </div>
     </div>
 
+    <form class="filters filters-simple" method="GET" action="{{ route('customers.index') }}">
+        <div class="field">
+            <label for="search">Search Customer</label>
+            <input id="search" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Customer name or phone">
+        </div>
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">Search</button>
+            <a class="btn btn-outline" href="{{ route('customers.index') }}">Reset</a>
+        </div>
+    </form>
+
     <section class="panel">
         <table>
             <thead>

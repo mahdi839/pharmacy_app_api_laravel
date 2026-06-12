@@ -16,6 +16,10 @@
         <div class="notice">{{ session('status') }}</div>
     @endif
 
+    @if (session('error'))
+        <div class="errors">{{ session('error') }}</div>
+    @endif
+
     <form class="filters" method="GET" action="{{ route('products.index') }}">
         <div class="field">
             <label for="name">Product Name</label>
@@ -86,7 +90,16 @@
                         <td>{{ $product->stock }}</td>
                         <td>BDT {{ number_format($product->stockValue(), 2) }}</td>
                         <td>{{ $product->discount }}%</td>
-                        <td><a class="btn btn-light btn-small" href="{{ route('products.edit', $product) }}">Edit</a></td>
+                        <td>
+                            <div class="actions">
+                                <a class="btn btn-light btn-small" href="{{ route('products.edit', $product) }}">Edit</a>
+                                <form method="POST" action="{{ route('products.destroy', $product) }}" onsubmit="return confirm('Delete this product? This action cannot be undone.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-danger-soft btn-small" type="submit">Delete</button>
+                                </form>
+                            </div>
+                        </td>
                     </tr>
                 @empty
                     <tr>

@@ -26,6 +26,7 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/products', [ProductController::class, 'store'])->name('products.store');
     Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
     Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
+    Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
 
     Route::get('/home-sliders', [HomeSliderController::class, 'index'])->name('home-sliders.index');
     Route::get('/home-sliders/create', [HomeSliderController::class, 'create'])->name('home-sliders.create');

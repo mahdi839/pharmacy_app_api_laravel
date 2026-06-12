@@ -14,6 +14,8 @@ class Order extends Model
         'on delivery',
         'delivered',
         'completed',
+        'cancelled',
+        'returned',
     ];
 
     protected $fillable = [

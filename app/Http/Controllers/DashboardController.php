@@ -15,6 +15,22 @@ class DashboardController extends Controller
     public function index(): View
     {
         $stockValue = Product::query()->sum(DB::raw('purchase_price * stock'));
+        $statusColors = [
+            'pending' => '#f59e0b',
+            'processing' => '#3b82f6',
+            'on delivery' => '#8b5cf6',
+            'delivered' => '#10b981',
+            'completed' => '#059669',
+            'cancelled' => '#ef4444',
+            'returned' => '#64748b',
+        ];
+        $statusBreakdown = collect(Order::STATUSES)->map(function (string $status) use ($statusColors) {
+            return [
+                'label' => $status,
+                'count' => Order::where('status', $status)->count(),
+                'color' => $statusColors[$status] ?? '#94a3b8',
+            ];
+        });
 
         return view('dashboard.index', [
             'totals' => [
@@ -32,6 +48,7 @@ class DashboardController extends Controller
                 'completed' => Order::whereIn('status', ['delivered', 'completed'])->sum('total'),
                 'pending' => Order::whereIn('status', ['pending', 'processing', 'on delivery'])->sum('total'),
             ],
+            'statusBreakdown' => $statusBreakdown,
             'dailySales' => Order::query()
                 ->selectRaw('DATE(created_at) as sale_date, SUM(total) as total_sell, COUNT(*) as orders_count')
                 ->whereDate('created_at', '>=', now()->subDays(6)->toDateString())

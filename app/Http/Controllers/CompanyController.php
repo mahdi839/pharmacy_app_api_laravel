@@ -10,10 +10,23 @@ use Illuminate\View\View;
 
 class CompanyController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $search = trim((string) $request->query('search', ''));
+
         return view('companies.index', [
-            'companies' => Company::withCount('products')->latest()->get(),
+            'companies' => Company::withCount('products')
+                ->when($search !== '', function ($query) use ($search): void {
+                    $query->where(function ($query) use ($search): void {
+                        $query
+                            ->where('name', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    });
+                })
+                ->latest()
+                ->get(),
+            'filters' => ['search' => $search],
         ]);
     }
 

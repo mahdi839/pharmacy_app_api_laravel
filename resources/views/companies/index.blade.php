@@ -16,6 +16,17 @@
         <div class="notice">{{ session('status') }}</div>
     @endif
 
+    <form class="filters filters-simple" method="GET" action="{{ route('companies.index') }}">
+        <div class="field">
+            <label for="search">Search Company</label>
+            <input id="search" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Company name, phone, or email">
+        </div>
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">Search</button>
+            <a class="btn btn-outline" href="{{ route('companies.index') }}">Reset</a>
+        </div>
+    </form>
+
     <section class="panel">
         <table>
             <thead>

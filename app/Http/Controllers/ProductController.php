@@ -71,6 +71,23 @@ class ProductController extends Controller
             ->with('status', 'Product updated successfully.');
     }
 
+    public function destroy(Product $product): RedirectResponse
+    {
+        if ($product->orderItems()->exists()) {
+            return back()->with('error', 'This product is already used in orders, so it cannot be deleted.');
+        }
+
+        if ($product->image && ! str_starts_with($product->image, 'http')) {
+            Storage::disk('public')->delete($product->image);
+        }
+
+        $product->delete();
+
+        return redirect()
+            ->route('products.index')
+            ->with('status', 'Product deleted successfully.');
+    }
+
     public function apiIndex(Request $request): JsonResponse
     {
         return response()->json([
