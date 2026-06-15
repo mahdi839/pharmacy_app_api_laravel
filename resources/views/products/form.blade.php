@@ -41,8 +41,12 @@
             <input id="purchase_price" name="purchase_price" type="number" min="0" step="0.01" value="{{ old('purchase_price', $product?->purchase_price ?? 0) }}" required>
         </div>
         <div class="field">
+            <label for="mrp_rate">MRP Rate</label>
+            <input id="mrp_rate" name="mrp_rate" type="number" min="0" step="0.01" value="{{ old('mrp_rate', $product?->mrp_rate) }}">
+        </div>
+        <div class="field">
             <label for="sell_price">Sell Price</label>
-            <input id="sell_price" name="sell_price" type="number" min="0" step="0.01" value="{{ old('sell_price', $product?->sell_price ?? $product?->price) }}" required>
+            <input id="sell_price" name="sell_price" type="number" min="0" step="0.01" value="{{ old('sell_price', $product?->sell_price ?? $product?->price) }}">
         </div>
         <div class="field">
             <label for="stock">Stock</label>
@@ -82,5 +86,22 @@
             sortField: { field: 'text', direction: 'asc' },
             plugins: ['dropdown_input'],
         });
+
+        const mrpRateInput = document.getElementById('mrp_rate');
+        const discountInput = document.getElementById('discount');
+        const sellPriceInput = document.getElementById('sell_price');
+
+        function updateSellPrice() {
+            const mrpRate = Number.parseFloat(mrpRateInput.value);
+            const discount = Number.parseFloat(discountInput.value) || 0;
+
+            if (Number.isFinite(mrpRate)) {
+                sellPriceInput.value = Math.max(mrpRate - (mrpRate * discount / 100), 0).toFixed(2);
+            }
+        }
+
+        mrpRateInput.addEventListener('input', updateSellPrice);
+        discountInput.addEventListener('input', updateSellPrice);
+        updateSellPrice();
     </script>
 @endpush

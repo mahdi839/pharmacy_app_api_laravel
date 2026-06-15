@@ -107,7 +107,8 @@ class ProductController extends Controller
             'strength' => ['required', 'string', 'max:50'],
             'form' => ['required', 'string', 'max:50'],
             'purchase_price' => ['required', 'numeric', 'min:0'],
-            'sell_price' => ['required', 'numeric', 'min:0'],
+            'mrp_rate' => ['nullable', 'numeric', 'min:0'],
+            'sell_price' => ['nullable', 'required_without:mrp_rate', 'numeric', 'min:0'],
             'stock' => ['required', 'integer', 'min:0'],
             'discount' => ['nullable', 'integer', 'min:0', 'max:100'],
             'image' => ['nullable', 'image', 'max:2048'],
@@ -117,10 +118,19 @@ class ProductController extends Controller
     private function prepareProductData(Request $request, array $validated, ?Product $product = null): array
     {
         $company = Company::findOrFail($validated['company_id']);
+        $mrpRate = filled($validated['mrp_rate'] ?? null) ? (float) $validated['mrp_rate'] : null;
+        $discount = (int) ($validated['discount'] ?? 0);
 
         $validated['company'] = $company->name;
-        $validated['discount'] = (int) ($validated['discount'] ?? 0);
-        $validated['price'] = $validated['sell_price'];
+        $validated['discount'] = $discount;
+
+        if ($mrpRate !== null) {
+            $validated['sell_price'] = round($mrpRate - ($mrpRate * ($discount / 100)), 2);
+            $validated['price'] = $mrpRate;
+        } else {
+            $validated['sell_price'] = (float) $validated['sell_price'];
+            $validated['price'] = $validated['sell_price'];
+        }
 
         if ($request->hasFile('image')) {
             if ($product?->image && ! str_starts_with($product->image, 'http')) {

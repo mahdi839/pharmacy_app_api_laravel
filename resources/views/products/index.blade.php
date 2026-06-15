@@ -56,6 +56,7 @@
             <div class="stat-label">Total Stock Value</div>
             <div class="stat-value">BDT {{ number_format($totals['stock_value'], 2) }}</div>
         </div>
+       
     </section>
 
     <section class="panel">
@@ -65,6 +66,7 @@
                     <th>Medicine</th>
                     <th>Company</th>
                     <th>Purchase Price</th>
+                    <th>MRP Rate</th>
                     <th>Sell Price</th>
                     <th>Stock</th>
                     <th>Stock Value</th>
@@ -86,6 +88,7 @@
                         </td>
                         <td>{{ $product->companyName() }}</td>
                         <td>BDT {{ number_format((float) $product->purchase_price, 2) }}</td>
+                        <td>{{ $product->mrp_rate === null ? '-' : 'BDT '.number_format((float) $product->mrp_rate, 2) }}</td>
                         <td>BDT {{ number_format($product->effectiveSellPrice(), 2) }}</td>
                         <td>{{ $product->stock }}</td>
                         <td>BDT {{ number_format($product->stockValue(), 2) }}</td>
@@ -103,7 +106,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="muted">No products found.</td>
+                        <td colspan="9" class="muted">No products found.</td>
                     </tr>
                 @endforelse
             </tbody>

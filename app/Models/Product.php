@@ -18,6 +18,7 @@ class Product extends Model
         'form',
         'purchase_price',
         'sell_price',
+        'mrp_rate',
         'price',
         'stock',
         'discount',
@@ -29,6 +30,7 @@ class Product extends Model
         return [
             'purchase_price' => 'decimal:2',
             'sell_price' => 'decimal:2',
+            'mrp_rate' => 'decimal:2',
             'price' => 'decimal:2',
             'stock' => 'integer',
             'discount' => 'integer',
@@ -74,6 +76,11 @@ class Product extends Model
         return (float) ($this->sell_price ?: $this->price);
     }
 
+    public function effectiveMrpRate(): float
+    {
+        return (float) ($this->mrp_rate ?: $this->price ?: $this->effectiveSellPrice());
+    }
+
     public function displayImage(): string
     {
         if (! $this->image) {
@@ -94,6 +101,10 @@ class Product extends Model
 
     public function discountedPrice(): float
     {
+        if ($this->mrp_rate !== null) {
+            return $this->effectiveSellPrice();
+        }
+
         $price = $this->effectiveSellPrice();
 
         return round($price - ($price * ($this->discount / 100)), 2);
@@ -109,8 +120,9 @@ class Product extends Model
             'strength' => $this->strength,
             'form' => $this->form,
             'purchase_price' => (float) $this->purchase_price,
+            'mrp_rate' => $this->mrp_rate === null ? null : (float) $this->mrp_rate,
             'sell_price' => $this->effectiveSellPrice(),
-            'price' => $this->effectiveSellPrice(),
+            'price' => $this->effectiveMrpRate(),
             'discounted_price' => $this->discountedPrice(),
             'stock' => $this->stock,
             'stock_value' => $this->stockValue(),

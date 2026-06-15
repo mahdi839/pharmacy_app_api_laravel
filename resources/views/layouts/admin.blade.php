@@ -53,6 +53,17 @@
         .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 16px; }
         .stats-grid-wide { grid-template-columns: repeat(4, minmax(0, 1fr)); }
         .stat-card { background: #fff; border: 1px solid #e3e8ef; border-radius: 8px; box-shadow: 0 12px 28px rgba(15, 23, 42, .05); padding: 16px; }
+        .stat-card-premium { border: 0; box-shadow: 0 18px 34px rgba(15, 23, 42, .14); color: #fff; position: relative; overflow: hidden; }
+        .stat-card-premium::after { background: rgba(255, 255, 255, .16); border-radius: 50%; content: ""; height: 96px; position: absolute; right: -34px; top: -34px; width: 96px; }
+        .stat-card-premium .stat-label, .stat-card-premium .stat-value { color: #fff; }
+        .stat-card-premium .card-icon { background: rgba(255, 255, 255, .18); color: #fff; }
+        .stat-card-emerald { background: linear-gradient(135deg, #047857 0%, #10b981 100%); }
+        .stat-card-sapphire { background: linear-gradient(135deg, #1d4ed8 0%, #38bdf8 100%); }
+        .stat-card-amber { background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%); }
+        .stat-card-violet { background: linear-gradient(135deg, #6d28d9 0%, #a78bfa 100%); }
+        .stat-card-rose { background: linear-gradient(135deg, #be123c 0%, #fb7185 100%); }
+        .stat-card-teal { background: linear-gradient(135deg, #0f766e 0%, #2dd4bf 100%); }
+        .stat-card-indigo { background: linear-gradient(135deg, #3730a3 0%, #818cf8 100%); }
         .stat-top { align-items: center; display: flex; gap: 10px; justify-content: space-between; }
         .card-icon { align-items: center; background: #e8f5ef; border-radius: 8px; color: #14543e; display: inline-flex; height: 36px; justify-content: center; width: 36px; }
         .stat-label { color: #667085; font-size: 12px; font-weight: 800; text-transform: uppercase; }

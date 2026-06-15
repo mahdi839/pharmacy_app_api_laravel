@@ -19,20 +19,20 @@
         ];
 
         $mainStats = [
-            ['label' => 'All Companies', 'value' => number_format($totals['companies']), 'icon' => 'building'],
-            ['label' => 'Total Products', 'value' => number_format($totals['products']), 'icon' => 'pill'],
-            ['label' => 'Total Stocks', 'value' => number_format($totals['stocks']), 'icon' => 'boxes'],
-            ['label' => 'Total Stock Value', 'value' => 'BDT '.number_format($totals['stock_value'], 2), 'icon' => 'wallet'],
-            ['label' => 'Total Customers', 'value' => number_format($totals['customers']), 'icon' => 'users'],
-            ['label' => 'Total Orders', 'value' => number_format($totals['orders']), 'icon' => 'orders'],
-            ['label' => 'Total Sell', 'value' => 'BDT '.number_format($totals['sell'], 2), 'icon' => 'sales'],
+            ['label' => 'All Companies', 'value' => number_format($totals['companies']), 'icon' => 'building', 'theme' => 'emerald'],
+            ['label' => 'Total Products', 'value' => number_format($totals['products']), 'icon' => 'pill', 'theme' => 'sapphire'],
+            ['label' => 'Total Stocks', 'value' => number_format($totals['stocks']), 'icon' => 'boxes', 'theme' => 'amber'],
+            ['label' => 'Total Stock Value', 'value' => 'BDT '.number_format($totals['stock_value'], 2), 'icon' => 'wallet', 'theme' => 'violet'],
+            ['label' => 'Total Customers', 'value' => number_format($totals['customers']), 'icon' => 'users', 'theme' => 'rose'],
+            ['label' => 'Total Orders', 'value' => number_format($totals['orders']), 'icon' => 'orders', 'theme' => 'teal'],
+            ['label' => 'Total Sell', 'value' => 'BDT '.number_format($totals['sell'], 2), 'icon' => 'sales', 'theme' => 'indigo'],
         ];
 
         $salesCards = [
-            ['label' => 'Today Sell', 'value' => 'BDT '.number_format($salesStats['today'], 2), 'icon' => 'clock'],
-            ['label' => 'This Month Sell', 'value' => 'BDT '.number_format($salesStats['this_month'], 2), 'icon' => 'chart'],
-            ['label' => 'Completed Sell', 'value' => 'BDT '.number_format($salesStats['completed'], 2), 'icon' => 'check'],
-            ['label' => 'Pending Sell', 'value' => 'BDT '.number_format($salesStats['pending'], 2), 'icon' => 'orders'],
+            ['label' => 'Today Sell', 'value' => 'BDT '.number_format($salesStats['today'], 2), 'icon' => 'clock', 'theme' => 'emerald'],
+            ['label' => 'This Month Sell', 'value' => 'BDT '.number_format($salesStats['this_month'], 2), 'icon' => 'chart', 'theme' => 'sapphire'],
+            ['label' => 'Completed Sell', 'value' => 'BDT '.number_format($salesStats['completed'], 2), 'icon' => 'check', 'theme' => 'indigo'],
+            ['label' => 'Pending Sell', 'value' => 'BDT '.number_format($salesStats['pending'], 2), 'icon' => 'orders', 'theme' => 'amber'],
         ];
 
         $statusTotal = (int) $statusBreakdown->sum('count');
@@ -49,7 +49,7 @@
 
     <section class="stats-grid stats-grid-wide">
         @foreach ($mainStats as $stat)
-            <div class="stat-card">
+            <div class="stat-card stat-card-premium stat-card-{{ $stat['theme'] }}">
                 <div class="stat-top">
                     <div class="stat-label">{{ $stat['label'] }}</div>
                     <span class="card-icon">{!! $icons[$stat['icon']] !!}</span>
@@ -61,7 +61,7 @@
 
     <section class="stats-grid">
         @foreach ($salesCards as $stat)
-            <div class="stat-card">
+            <div class="stat-card stat-card-premium stat-card-{{ $stat['theme'] }}">
                 <div class="stat-top">
                     <div class="stat-label">{{ $stat['label'] }}</div>
                     <span class="card-icon">{!! $icons[$stat['icon']] !!}</span>
