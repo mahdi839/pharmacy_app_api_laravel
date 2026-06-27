@@ -241,18 +241,17 @@
 
         <h2 id="account-deletion">Account and data deletion</h2>
         <p>
-            You may request deletion of your Med Bangladesh account and associated personal data by
-            emailing
-            <a href="mailto:{{ config('app.privacy_email') }}">{{ config('app.privacy_email') }}</a>
-            from the email address connected to your account, or by including the phone number
-            connected to your account. Use the subject “Account deletion request.”
+            You may delete your Med Bangladesh account and associated personal data through our
+            <a href="{{ route('account-deletion') }}">account deletion page</a>. You will need the
+            phone number or email address and password connected to your account so that we can
+            verify the request.
         </p>
         <p>
-            We may take reasonable steps to verify your identity before completing the request.
-            After verification, we will delete the account and associated personal data within a
-            reasonable period. Some order or transaction information may be retained when necessary
-            for legal, regulatory, security, fraud-prevention, or dispute-resolution purposes. Any
-            retained information will remain protected and will not be used for unrelated purposes.
+            After verification, we delete your account identifiers and remove personal delivery
+            details and notes from previous orders. We retain anonymized transaction details such as
+            order number, products, quantities, prices, status, and transaction dates for business,
+            security, dispute, and legal recordkeeping. Because these retained records are no longer
+            connected to your identity, they may be kept indefinitely in anonymized form.
         </p>
 
         <h2>Children’s privacy</h2>

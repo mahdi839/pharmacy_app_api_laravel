@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\AccountDeletionController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
@@ -11,6 +12,11 @@ use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/privacy-policy', 'privacy-policy')->name('privacy-policy');
+Route::get('/account-deletion', [AccountDeletionController::class, 'show'])
+    ->name('account-deletion');
+Route::post('/account-deletion', [AccountDeletionController::class, 'destroy'])
+    ->middleware('throttle:5,1')
+    ->name('account-deletion.destroy');
 
 Route::redirect('/', '/dashboard');
 
