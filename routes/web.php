@@ -10,6 +10,8 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
+Route::view('/privacy-policy', 'privacy-policy')->name('privacy-policy');
+
 Route::redirect('/', '/dashboard');
 
 Route::middleware('guest')->group(function (): void {
