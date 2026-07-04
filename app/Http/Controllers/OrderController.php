@@ -116,7 +116,9 @@ class OrderController extends Controller
             return response()->json(['message' => 'Please login before placing an order.'], 401);
         }
 
-        $order = $this->createOrder($this->validatedOrder($request), 'pending', $customer->id);
+        $validated = $this->validatedOrder($request);
+        $customer->update(['address' => $validated['customer_address']]);
+        $order = $this->createOrder($validated, 'pending', $customer->id);
 
         return response()->json([
             'message' => 'Order placed successfully.',

@@ -5,74 +5,139 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Invoice {{ $order->order_number }}</title>
     <style>
-        body { font-family: Arial, sans-serif; color: #1f2933; margin: 0; padding: 32px; }
-        .top { display: flex; justify-content: space-between; gap: 20px; margin-bottom: 28px; }
-        h1 { margin: 0; color: #12372f; }
-        .muted { color: #667085; font-size: 13px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 18px; }
-        th, td { border-bottom: 1px solid #e3e8ef; padding: 12px; text-align: left; }
-        th { background: #f8fafc; font-size: 12px; text-transform: uppercase; }
-        .totals { margin-left: auto; margin-top: 20px; width: 320px; }
-        .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #edf1f5; }
-        .grand { font-size: 18px; font-weight: 800; color: #12372f; }
-        .print { background: #1a7f5a; color: #fff; border: 0; border-radius: 6px; padding: 10px 14px; font-weight: 800; cursor: pointer; }
-        @media print { .print { display: none; } body { padding: 0; } }
+        * { box-sizing: border-box; }
+        :root { --paper-width: 80mm; }
+        @page { size: 80mm 200mm; margin: 0; }
+        body {
+            background: #f3f4f6;
+            color: #000;
+            font-family: "Courier New", monospace;
+            font-size: 11px;
+            line-height: 1.35;
+            margin: 0;
+            padding: 20px;
+        }
+        .receipt {
+            background: #fff;
+            margin: 0 auto;
+            padding: 4mm;
+            width: var(--paper-width);
+        }
+        .center { text-align: center; }
+        .store-name { font-family: Arial, sans-serif; font-size: 18px; font-weight: 900; }
+        .muted { font-size: 10px; }
+        .divider { border-top: 1px dashed #000; margin: 8px 0; }
+        .info-row, .total-row, .item-summary {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .info-row span:last-child, .total-row span:last-child, .item-summary span:last-child {
+            text-align: right;
+        }
+        .customer { overflow-wrap: anywhere; }
+        .item { margin: 8px 0; }
+        .item-name { font-weight: 700; }
+        .item-meta { font-size: 9px; }
+        .grand { font-size: 13px; font-weight: 900; padding-top: 3px; }
+        .print-actions { margin: 0 auto 12px; text-align: center; width: 80mm; }
+        .print {
+            background: #1a7f5a;
+            border: 0;
+            border-radius: 6px;
+            color: #fff;
+            cursor: pointer;
+            font-weight: 800;
+            padding: 10px 14px;
+        }
+        @media print {
+            body { background: #fff; padding: 0; width: var(--paper-width); }
+            .receipt { margin: 0; padding: 3mm; width: var(--paper-width); }
+            .print-actions { display: none; }
+        }
     </style>
 </head>
 <body>
-    <div class="top">
-        <div>
-            <h1>Med Bangladesh</h1>
-            <div class="muted">Pharmacy order invoice</div>
-        </div>
-        <div>
-            <button class="print" onclick="window.print()">Print Invoice</button>
-        </div>
+    <div class="print-actions">
+        <button class="print" onclick="printReceipt(58)">Print 58mm Receipt</button>
+        <button class="print" onclick="printReceipt(80)">Print 80mm Receipt</button>
     </div>
 
-    <div class="top">
-        <div>
-            <strong>Bill To</strong>
-            <div>{{ $order->customer_name }}</div>
-            <div>{{ $order->customer_phone }}</div>
-            <div>{{ $order->customer_address }}</div>
-        </div>
-        <div>
-            <strong>{{ $order->order_number }}</strong>
-            <div class="muted">{{ $order->created_at->format('M d, Y h:i A') }}</div>
-            <div class="muted">Status: {{ ucfirst($order->status) }}</div>
-        </div>
-    </div>
+    <main class="receipt" id="receipt">
+        <header class="center">
+            <div class="store-name">MED BANGLADESH</div>
+            <div>Medicine Order Receipt</div>
+        </header>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Medicine</th>
-                <th>Company</th>
-                <th>Unit Price</th>
-                <th>Discount</th>
-                <th>Qty</th>
-                <th>Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($order->items as $item)
-                <tr>
-                    <td>{{ $item->product_name }} <div class="muted">{{ $item->strength }} | {{ $item->form }}</div></td>
-                    <td>{{ $item->company }}</td>
-                    <td>BDT {{ number_format((float) $item->unit_price, 2) }}</td>
-                    <td>{{ $item->discount_percentage }}%</td>
-                    <td>{{ $item->quantity }}</td>
-                    <td>BDT {{ number_format((float) $item->line_total, 2) }}</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+        <div class="divider"></div>
 
-    <div class="totals">
-        <div class="row"><span>Subtotal</span><span>BDT {{ number_format((float) $order->subtotal, 2) }}</span></div>
-        <div class="row"><span>Discount</span><span>BDT {{ number_format((float) $order->discount_total, 2) }}</span></div>
-        <div class="row grand"><span>Grand Total</span><span>BDT {{ number_format((float) $order->total, 2) }}</span></div>
-    </div>
+        <div class="info-row"><span>Invoice</span><strong>{{ $order->order_number }}</strong></div>
+        <div class="info-row"><span>Date</span><span>{{ $order->created_at->format('d-m-Y h:i A') }}</span></div>
+        <div class="info-row"><span>Status</span><span>{{ ucfirst($order->status) }}</span></div>
+
+        <div class="divider"></div>
+
+        <div class="customer">
+            <strong>Customer</strong><br>
+            {{ $order->customer_name }}<br>
+            {{ $order->customer_phone }}<br>
+            {{ $order->customer_address }}
+        </div>
+
+        <div class="divider"></div>
+
+        @foreach ($order->items as $item)
+            <div class="item">
+                <div class="item-name">{{ $item->product_name }}</div>
+                <div class="item-meta">{{ $item->company }} · {{ $item->strength }} {{ $item->form }} · {{ $item->discount_percentage }}% off</div>
+                <div class="item-summary">
+                    <span>{{ $item->quantity }} × BDT {{ number_format((float) $item->unit_price, 2) }}</span>
+                    <strong>BDT {{ number_format((float) $item->line_total, 2) }}</strong>
+                </div>
+            </div>
+        @endforeach
+
+        <div class="divider"></div>
+
+        <div class="total-row"><span>Subtotal</span><span>BDT {{ number_format((float) $order->subtotal, 2) }}</span></div>
+        <div class="total-row"><span>Discount</span><span>- BDT {{ number_format((float) $order->discount_total, 2) }}</span></div>
+        <div class="total-row grand"><span>GRAND TOTAL</span><span>BDT {{ number_format((float) $order->total, 2) }}</span></div>
+
+        @if ($order->notes)
+            <div class="divider"></div>
+            <div><strong>Note:</strong> {{ $order->notes }}</div>
+        @endif
+
+        <div class="divider"></div>
+        <footer class="center muted">
+            Thank you for your order.
+        </footer>
+    </main>
+    <script>
+        let selectedPaperWidth = 80;
+
+        const configureThermalPage = (paperWidth = selectedPaperWidth) => {
+            selectedPaperWidth = paperWidth;
+            document.documentElement.style.setProperty('--paper-width', `${paperWidth}mm`);
+            const receipt = document.getElementById('receipt');
+            const heightInMillimeters = Math.ceil(receipt.scrollHeight * 25.4 / 96);
+            let pageStyle = document.getElementById('thermal-page-size');
+
+            if (!pageStyle) {
+                pageStyle = document.createElement('style');
+                pageStyle.id = 'thermal-page-size';
+                document.head.appendChild(pageStyle);
+            }
+
+            pageStyle.textContent = `@page { size: ${paperWidth}mm ${heightInMillimeters}mm; margin: 0; }`;
+        };
+
+        const printReceipt = (paperWidth) => {
+            configureThermalPage(paperWidth);
+            window.print();
+        };
+
+        window.addEventListener('beforeprint', () => configureThermalPage());
+    </script>
 </body>
 </html>

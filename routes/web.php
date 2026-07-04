@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AccountDeletionController;
+use App\Http\Controllers\BannerController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
@@ -42,6 +43,13 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/home-sliders/{homeSlider}/edit', [HomeSliderController::class, 'edit'])->name('home-sliders.edit');
     Route::put('/home-sliders/{homeSlider}', [HomeSliderController::class, 'update'])->name('home-sliders.update');
     Route::delete('/home-sliders/{homeSlider}', [HomeSliderController::class, 'destroy'])->name('home-sliders.destroy');
+
+    Route::get('/banners', [BannerController::class, 'index'])->name('banners.index');
+    Route::get('/banners/create', [BannerController::class, 'create'])->name('banners.create');
+    Route::post('/banners', [BannerController::class, 'store'])->name('banners.store');
+    Route::get('/banners/{banner}/edit', [BannerController::class, 'edit'])->name('banners.edit');
+    Route::put('/banners/{banner}', [BannerController::class, 'update'])->name('banners.update');
+    Route::delete('/banners/{banner}', [BannerController::class, 'destroy'])->name('banners.destroy');
 
     Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
     Route::get('/companies/create', [CompanyController::class, 'create'])->name('companies.create');

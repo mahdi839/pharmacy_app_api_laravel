@@ -14,6 +14,7 @@ class Customer extends Model
         'name',
         'gmail',
         'phone',
+        'address',
         'password',
         'api_token',
     ];
@@ -46,6 +47,7 @@ class Customer extends Model
             'name' => $this->name,
             'gmail' => $this->gmail,
             'phone' => $this->phone,
+            'address' => $this->address,
         ];
     }
 }

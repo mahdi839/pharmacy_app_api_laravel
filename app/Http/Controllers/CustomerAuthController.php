@@ -15,6 +15,7 @@ class CustomerAuthController extends Controller
             'name' => ['required', 'string', 'max:120'],
             'gmail' => ['nullable', 'email', 'max:120', 'unique:customers,gmail'],
             'phone' => ['required', 'string', 'max:30', 'unique:customers,phone'],
+            'address' => ['required', 'string', 'max:1000'],
             'password' => ['required', 'string', 'min:6', 'max:100'],
         ]);
 
