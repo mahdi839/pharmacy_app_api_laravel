@@ -12,10 +12,13 @@
             background: #f3f4f6;
             color: #000;
             font-family: "Courier New", monospace;
-            font-size: 11px;
-            line-height: 1.35;
+            font-size: 11.5px;
+            font-weight: 500;
+            line-height: 1.4;
             margin: 0;
             padding: 20px;
+            -webkit-font-smoothing: none;
+            text-rendering: geometricPrecision;
         }
         .receipt {
             background: #fff;
@@ -25,20 +28,39 @@
         }
         .center { text-align: center; }
         .store-name { font-family: Arial, sans-serif; font-size: 18px; font-weight: 900; }
-        .muted { font-size: 10px; }
+        .muted { font-size: 10px; font-weight: 700; }
         .divider { border-top: 1px dashed #000; margin: 8px 0; }
         .info-row, .total-row, .item-summary {
             display: flex;
             justify-content: space-between;
             gap: 8px;
         }
+        .info-row, .total-row { font-weight: 700; }
         .info-row span:last-child, .total-row span:last-child, .item-summary span:last-child {
             text-align: right;
         }
-        .customer { overflow-wrap: anywhere; }
+        .customer {
+            font-weight: 700;
+            overflow-wrap: anywhere;
+        }
         .item { margin: 8px 0; }
-        .item-name { font-weight: 700; }
-        .item-meta { font-size: 9px; }
+        .item-name {
+            font-size: 12.5px;
+            font-weight: 900;
+            letter-spacing: 0.1px;
+            text-transform: uppercase;
+        }
+        .item-meta {
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1.35;
+            margin-top: 2px;
+        }
+        .item-summary {
+            font-size: 11px;
+            font-weight: 800;
+            margin-top: 4px;
+        }
         .grand { font-size: 13px; font-weight: 900; padding-top: 3px; }
         .print-actions { margin: 0 auto 12px; text-align: center; width: 80mm; }
         .print {
@@ -51,9 +73,36 @@
             padding: 10px 14px;
         }
         @media print {
-            body { background: #fff; padding: 0; width: var(--paper-width); }
-            .receipt { margin: 0; padding: 3mm; width: var(--paper-width); }
+            body {
+                background: #fff;
+                color: #000;
+                font-size: 12px;
+                font-weight: 600;
+                line-height: 1.45;
+                padding: 0;
+                width: var(--paper-width);
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+            .receipt {
+                margin: 0;
+                padding: 3mm;
+                width: var(--paper-width);
+            }
             .print-actions { display: none; }
+            .store-name,
+            .item-name,
+            .item-summary strong,
+            .grand,
+            strong {
+                font-weight: 900;
+            }
+            .item-meta,
+            .muted,
+            .info-row,
+            .total-row {
+                color: #000;
+            }
         }
     </style>
 </head>
@@ -89,9 +138,9 @@
         @foreach ($order->items as $item)
             <div class="item">
                 <div class="item-name">{{ $item->product_name }}</div>
-                <div class="item-meta">{{ $item->company }} · {{ $item->strength }} {{ $item->form }} · {{ $item->discount_percentage }}% off</div>
+                <div class="item-meta">{{ $item->company }} | {{ $item->strength }} {{ $item->form }} | {{ $item->discount_percentage }}% OFF</div>
                 <div class="item-summary">
-                    <span>{{ $item->quantity }} × BDT {{ number_format((float) $item->unit_price, 2) }}</span>
+                    <span>{{ $item->quantity }} x BDT {{ number_format((float) $item->unit_price, 2) }}</span>
                     <strong>BDT {{ number_format((float) $item->line_total, 2) }}</strong>
                 </div>
             </div>
