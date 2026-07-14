@@ -20,7 +20,6 @@
         <h1>Med Bangladesh</h1>
         <p>Order medicines and manage your pharmacy from the Med Bangladesh Android app.</p>
         <a class="btn" href="{{ env('APK_DOWNLOAD_URL', '/downloads/med-bangladesh.apk') }}" download>Download Android App</a>
-        <a class="admin" href="{{ route('login') }}">Admin login</a>
         <div class="note">Android APK download</div>
     </main>
 </body>
