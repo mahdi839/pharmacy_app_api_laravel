@@ -2,6 +2,8 @@
 
 return [
 
+    'apk_download_url' => env('APK_DOWNLOAD_URL', '/downloads/med-bangladesh.apk'),
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

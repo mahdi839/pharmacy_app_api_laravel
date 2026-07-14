@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Admin;
 use App\Models\Banner;
 use App\Models\Order;
+use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -13,6 +14,69 @@ use Tests\TestCase;
 class MobileShoppingFlowTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_mobile_order_decreases_product_stock(): void
+    {
+        $product = Product::create([
+            'name' => 'Stock Test Medicine',
+            'company' => 'Test Pharma',
+            'strength' => '500mg',
+            'form' => 'Tablet',
+            'price' => 20,
+            'sell_price' => 18,
+            'stock' => 10,
+            'discount' => 10,
+        ]);
+
+        $token = $this->postJson('/api/customer/register', [
+            'name' => 'Stock Customer',
+            'gmail' => 'stock@example.com',
+            'phone' => '01700000123',
+            'address' => 'Dhaka',
+            'password' => 'secret123',
+        ])->json('token');
+
+        $this->withToken($token)->postJson('/api/orders', [
+            'customer_name' => 'Stock Customer',
+            'customer_phone' => '01700000123',
+            'customer_address' => 'Dhaka',
+            'items' => [['product_id' => $product->id, 'quantity' => 3]],
+        ])->assertCreated();
+
+        $this->assertSame(7, $product->fresh()->stock);
+    }
+
+    public function test_mobile_order_cannot_exceed_available_stock(): void
+    {
+        $product = Product::create([
+            'name' => 'Limited Medicine',
+            'company' => 'Test Pharma',
+            'strength' => '10mg',
+            'form' => 'Tablet',
+            'price' => 10,
+            'sell_price' => 10,
+            'stock' => 2,
+            'discount' => 0,
+        ]);
+
+        $token = $this->postJson('/api/customer/register', [
+            'name' => 'Limited Customer',
+            'gmail' => 'limited@example.com',
+            'phone' => '01700000456',
+            'address' => 'Dhaka',
+            'password' => 'secret123',
+        ])->json('token');
+
+        $this->withToken($token)->postJson('/api/orders', [
+            'customer_name' => 'Limited Customer',
+            'customer_phone' => '01700000456',
+            'customer_address' => 'Dhaka',
+            'items' => [['product_id' => $product->id, 'quantity' => 3]],
+        ])->assertUnprocessable()->assertJsonValidationErrors('items');
+
+        $this->assertSame(2, $product->fresh()->stock);
+        $this->assertDatabaseCount('orders', 0);
+    }
 
     public function test_customer_registration_saves_and_returns_delivery_address(): void
     {
@@ -93,7 +157,7 @@ class MobileShoppingFlowTest extends TestCase
         ]);
 
         $this->get("/orders/{$order->id}/invoice")
-            ->assertRedirect('/login');
+            ->assertRedirect('/admin/login');
 
         $view = $this->view('orders.invoice', [
             'order' => $order->load('items'),

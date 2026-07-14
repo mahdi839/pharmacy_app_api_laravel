@@ -11,6 +11,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class OrderController extends Controller
@@ -73,6 +74,8 @@ class OrderController extends Controller
         $validated = $this->validatedOrder($request, true);
 
         DB::transaction(function () use ($order, $validated): void {
+            $this->restoreItemStock($order);
+
             $order->update([
                 'customer_name' => $validated['customer_name'],
                 'customer_phone' => $validated['customer_phone'],
@@ -175,8 +178,18 @@ class OrderController extends Controller
         $items
             ->groupBy('product_id')
             ->map(fn (Collection $rows): int => $rows->sum('quantity'))
+            ->sortKeys()
             ->each(function (int $quantity, int|string $productId) use ($order, &$subtotal, &$discountTotal, &$total): void {
-                $product = Product::with('companyInfo')->findOrFail($productId);
+                $product = Product::query()->lockForUpdate()->findOrFail($productId);
+                $product->load('companyInfo');
+
+                if ($product->stock < $quantity) {
+                    throw ValidationException::withMessages([
+                        'items' => "Only {$product->stock} unit(s) of {$product->name} are currently available.",
+                    ]);
+                }
+
+                $product->decrement('stock', $quantity);
                 $unitPrice = $product->effectiveMrpRate();
                 $lineSubtotal = $unitPrice * $quantity;
                 $lineTotal = $product->discountedPrice() * $quantity;
@@ -204,6 +217,23 @@ class OrderController extends Controller
             'discount_total' => $discountTotal,
             'total' => $total,
         ]);
+    }
+
+    private function restoreItemStock(Order $order): void
+    {
+        $order->items()
+            ->selectRaw('product_id, SUM(quantity) as quantity')
+            ->whereNotNull('product_id')
+            ->groupBy('product_id')
+            ->orderBy('product_id')
+            ->get()
+            ->each(function ($item): void {
+                Product::query()
+                    ->whereKey($item->product_id)
+                    ->lockForUpdate()
+                    ->first()
+                    ?->increment('stock', (int) $item->quantity);
+            });
     }
 
     private function nextOrderNumber(): string

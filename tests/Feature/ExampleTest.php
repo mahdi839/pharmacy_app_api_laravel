@@ -7,17 +7,17 @@ use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
-    public function test_root_redirects_to_dashboard(): void
+    public function test_root_displays_public_download_page(): void
     {
         $response = $this->get('/');
 
-        $response->assertRedirect('/dashboard');
+        $response->assertOk()->assertSee('Download for Android');
     }
 
     public function test_dashboard_requires_admin_login(): void
     {
         $response = $this->get('/dashboard');
 
-        $response->assertRedirect('/login');
+        $response->assertRedirect('/admin/login');
     }
 }
