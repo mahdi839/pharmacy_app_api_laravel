@@ -19,11 +19,11 @@ Route::post('/account-deletion', [AccountDeletionController::class, 'destroy'])
     ->middleware('throttle:5,1')
     ->name('account-deletion.destroy');
 
-Route::redirect('/', '/dashboard');
+Route::view('/', 'download')->name('download');
 
 Route::middleware('guest')->group(function (): void {
-    Route::get('/login', [AdminAuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AdminAuthController::class, 'login'])->name('login.store');
+    Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])->name('login');
+    Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('login.store');
 });
 
 Route::middleware('auth')->group(function (): void {
