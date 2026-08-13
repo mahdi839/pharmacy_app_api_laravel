@@ -25,6 +25,7 @@ class Order extends Model
         'customer_phone',
         'customer_address',
         'status',
+        'combined_order_count',
         'subtotal',
         'discount_total',
         'total',
@@ -37,6 +38,7 @@ class Order extends Model
             'subtotal' => 'decimal:2',
             'discount_total' => 'decimal:2',
             'total' => 'decimal:2',
+            'combined_order_count' => 'integer',
         ];
     }
 
@@ -60,6 +62,8 @@ class Order extends Model
             'customer_phone' => $this->customer_phone,
             'customer_address' => $this->customer_address,
             'status' => $this->status,
+            'combined_order_count' => (int) ($this->combined_order_count ?? 1),
+            'combines_until' => $this->created_at?->copy()->addHours(12)->toIso8601String(),
             'subtotal' => (float) $this->subtotal,
             'discount_total' => (float) $this->discount_total,
             'total' => (float) $this->total,

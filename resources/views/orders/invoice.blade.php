@@ -123,6 +123,10 @@
         <div class="info-row"><span>Invoice</span><strong>{{ $order->order_number }}</strong></div>
         <div class="info-row"><span>Date</span><span>{{ $order->created_at->format('d-m-Y h:i A') }}</span></div>
         <div class="info-row"><span>Status</span><span>{{ ucfirst($order->status) }}</span></div>
+        @if ($order->combined_order_count > 1)
+            <div class="info-row"><span>Orders combined</span><span>{{ $order->combined_order_count }}</span></div>
+            <div class="info-row"><span>Last updated</span><span>{{ $order->updated_at->format('d-m-Y h:i A') }}</span></div>
+        @endif
 
         <div class="divider"></div>
 

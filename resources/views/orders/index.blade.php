@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('section_label', 'Orders')
-@section('section_hint', 'Orders submitted from the mobile app appear here.')
+@section('section_hint', 'Pending orders from the same customer are combined for 12 hours.')
 
 @section('content')
     <div class="toolbar">
@@ -59,6 +59,12 @@
                         <td>
                             <div class="strong">{{ $order->order_number }}</div>
                             <div class="muted">{{ $order->created_at->format('M d, Y h:i A') }}</div>
+                            @if ($order->combined_order_count > 1)
+                                <div class="muted">{{ $order->combined_order_count }} orders combined · updated {{ $order->updated_at->format('M d, h:i A') }}</div>
+                            @endif
+                            @if ($order->status === 'pending')
+                                <div class="muted">Combines until {{ $order->created_at->copy()->addHours(12)->format('M d, h:i A') }}</div>
+                            @endif
                         </td>
                         <td>
                             <div class="strong">{{ $order->customer_name }}</div>

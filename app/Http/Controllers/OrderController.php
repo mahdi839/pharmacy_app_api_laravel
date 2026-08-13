@@ -51,11 +51,15 @@ class OrderController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $order = $this->createOrder($this->validatedOrder($request), 'pending');
+        [$order, $wasCombined] = $this->createOrCombineOrder($this->validatedOrder($request), 'pending');
+
+        $message = $wasCombined
+            ? "Items added to existing order {$order->order_number}."
+            : "Order {$order->order_number} created successfully.";
 
         return redirect()
             ->route('orders.index')
-            ->with('status', "Order {$order->order_number} created successfully.");
+            ->with('status', $message);
     }
 
     public function edit(Order $order): View
@@ -121,10 +125,12 @@ class OrderController extends Controller
 
         $validated = $this->validatedOrder($request);
         $customer->update(['address' => $validated['customer_address']]);
-        $order = $this->createOrder($validated, 'pending', $customer->id);
+        [$order, $wasCombined] = $this->createOrCombineOrder($validated, 'pending', $customer->id);
 
         return response()->json([
-            'message' => 'Order placed successfully.',
+            'message' => $wasCombined
+                ? "Your items were added to order {$order->order_number}."
+                : 'Order placed successfully.',
             'data' => $order->load('items.product')->apiPayload(),
         ], 201);
     }
@@ -150,9 +156,55 @@ class OrderController extends Controller
         ]);
     }
 
-    private function createOrder(array $validated, string $status, ?int $customerId = null): Order
+    /**
+     * Add repeat purchases to a customer's pending order for 12 hours from its creation.
+     *
+     * @return array{0: Order, 1: bool}
+     */
+    private function createOrCombineOrder(array $validated, string $status, ?int $customerId = null): array
     {
-        return DB::transaction(function () use ($validated, $status, $customerId): Order {
+        return DB::transaction(function () use ($validated, $status, $customerId): array {
+            if ($customerId) {
+                DB::table('customers')->where('id', $customerId)->lockForUpdate()->first();
+            }
+
+            $order = Order::query()
+                ->where('status', 'pending')
+                ->where('created_at', '>=', now()->subHours(12))
+                ->where(function ($query) use ($customerId, $validated): void {
+                    if ($customerId) {
+                        $query
+                            ->where('customer_id', $customerId)
+                            ->orWhere(function ($query) use ($validated): void {
+                                $query
+                                    ->whereNull('customer_id')
+                                    ->where('customer_phone', $validated['customer_phone']);
+                            });
+
+                        return;
+                    }
+
+                    $query->where('customer_phone', $validated['customer_phone']);
+                })
+                ->latest('created_at')
+                ->lockForUpdate()
+                ->first();
+
+            if ($order) {
+                $order->update([
+                    'customer_id' => $customerId ?? $order->customer_id,
+                    'customer_name' => $validated['customer_name'],
+                    'customer_phone' => $validated['customer_phone'],
+                    'customer_address' => $validated['customer_address'],
+                    'notes' => $this->combineNotes($order->notes, $validated['notes'] ?? null),
+                    'combined_order_count' => $order->combined_order_count + 1,
+                ]);
+
+                $this->appendItems($order, collect($validated['items']));
+
+                return [$order->load('items.product'), true];
+            }
+
             $order = Order::create([
                 'customer_id' => $customerId,
                 'order_number' => $this->nextOrderNumber(),
@@ -160,13 +212,98 @@ class OrderController extends Controller
                 'customer_phone' => $validated['customer_phone'],
                 'customer_address' => $validated['customer_address'],
                 'status' => $validated['status'] ?? $status,
+                'combined_order_count' => 1,
                 'notes' => $validated['notes'] ?? null,
             ]);
 
             $this->syncItems($order, collect($validated['items']));
 
-            return $order->load('items.product');
+            return [$order->load('items.product'), false];
         });
+    }
+
+    private function appendItems(Order $order, Collection $items): void
+    {
+        $items
+            ->groupBy('product_id')
+            ->map(fn (Collection $rows): int => $rows->sum('quantity'))
+            ->sortKeys()
+            ->each(function (int $quantity, int|string $productId) use ($order): void {
+                $product = Product::query()->lockForUpdate()->findOrFail($productId);
+                $product->load('companyInfo');
+
+                if ($product->stock < $quantity) {
+                    throw ValidationException::withMessages([
+                        'items' => "Only {$product->stock} unit(s) of {$product->name} are currently available.",
+                    ]);
+                }
+
+                $product->decrement('stock', $quantity);
+                $unitPrice = $product->effectiveMrpRate();
+                $lineTotal = $product->discountedPrice() * $quantity;
+                $company = $product->companyName();
+
+                $existingItem = $order->items()
+                    ->where('product_id', $product->id)
+                    ->where('product_name', $product->name)
+                    ->where('company', $company)
+                    ->where('strength', $product->strength)
+                    ->where('form', $product->form)
+                    ->where('unit_price', $unitPrice)
+                    ->where('discount_percentage', $product->discount)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($existingItem) {
+                    $existingItem->update([
+                        'quantity' => $existingItem->quantity + $quantity,
+                        'line_total' => (float) $existingItem->line_total + $lineTotal,
+                    ]);
+
+                    return;
+                }
+
+                $order->items()->create([
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'company' => $company,
+                    'strength' => $product->strength,
+                    'form' => $product->form,
+                    'unit_price' => $unitPrice,
+                    'discount_percentage' => $product->discount,
+                    'quantity' => $quantity,
+                    'line_total' => $lineTotal,
+                ]);
+            });
+
+        $this->recalculateTotals($order);
+    }
+
+    private function recalculateTotals(Order $order): void
+    {
+        $items = $order->items()->get();
+        $subtotal = $items->sum(
+            fn ($item): float => (float) $item->unit_price * $item->quantity,
+        );
+        $total = $items->sum(fn ($item): float => (float) $item->line_total);
+
+        $order->update([
+            'subtotal' => $subtotal,
+            'discount_total' => $subtotal - $total,
+            'total' => $total,
+        ]);
+    }
+
+    private function combineNotes(?string $existingNotes, ?string $newNotes): ?string
+    {
+        $existingNotes = filled($existingNotes) ? trim($existingNotes) : null;
+        $newNotes = filled($newNotes) ? trim($newNotes) : null;
+
+        if (! $newNotes || $newNotes === $existingNotes) {
+            return $existingNotes;
+        }
+
+        return $existingNotes ? "{$existingNotes}\n{$newNotes}" : $newNotes;
     }
 
     private function syncItems(Order $order, Collection $items): void

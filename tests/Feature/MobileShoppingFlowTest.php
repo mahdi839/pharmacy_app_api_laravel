@@ -46,6 +46,113 @@ class MobileShoppingFlowTest extends TestCase
         $this->assertSame(7, $product->fresh()->stock);
     }
 
+    public function test_repeat_orders_are_combined_during_a_fixed_twelve_hour_window(): void
+    {
+        $product = Product::create([
+            'name' => 'Repeat Order Medicine',
+            'company' => 'Test Pharma',
+            'strength' => '500mg',
+            'form' => 'Tablet',
+            'price' => 20,
+            'mrp_rate' => 20,
+            'sell_price' => 18,
+            'stock' => 10,
+            'discount' => 10,
+        ]);
+
+        $token = $this->postJson('/api/customer/register', [
+            'name' => 'Repeat Customer',
+            'gmail' => 'repeat@example.com',
+            'phone' => '01700000789',
+            'address' => 'Dhaka',
+            'password' => 'secret123',
+        ])->json('token');
+
+        $payload = [
+            'customer_name' => 'Repeat Customer',
+            'customer_phone' => '01700000789',
+            'customer_address' => 'Dhaka',
+            'items' => [['product_id' => $product->id, 'quantity' => 1]],
+        ];
+
+        $firstResponse = $this->withToken($token)->postJson('/api/orders', $payload)->assertCreated();
+        $firstOrderId = $firstResponse->json('data.id');
+
+        $this->travel(11)->hours();
+
+        $this->withToken($token)->postJson('/api/orders', [
+            ...$payload,
+            'items' => [['product_id' => $product->id, 'quantity' => 2]],
+        ])
+            ->assertCreated()
+            ->assertJsonPath('data.id', $firstOrderId)
+            ->assertJsonPath('data.combined_order_count', 2)
+            ->assertJsonPath('data.items.0.quantity', 3)
+            ->assertJsonPath('data.total', 54);
+
+        $this->assertDatabaseCount('orders', 1);
+        $this->assertDatabaseHas('orders', [
+            'id' => $firstOrderId,
+            'combined_order_count' => 2,
+            'total' => 54,
+        ]);
+        $this->assertSame(7, $product->fresh()->stock);
+
+        $combinedOrder = Order::with('items')->findOrFail($firstOrderId);
+        $this->view('orders.invoice', ['order' => $combinedOrder])
+            ->assertSee('Orders combined')
+            ->assertSee('>2<', false);
+
+        $this->travel(2)->hours();
+
+        $this->withToken($token)->postJson('/api/orders', $payload)
+            ->assertCreated()
+            ->assertJsonPath('data.combined_order_count', 1);
+
+        $this->assertDatabaseCount('orders', 2);
+        $this->assertSame(6, $product->fresh()->stock);
+    }
+
+    public function test_a_repeat_order_does_not_change_an_order_already_being_processed(): void
+    {
+        $product = Product::create([
+            'name' => 'Processing Order Medicine',
+            'company' => 'Test Pharma',
+            'strength' => '10mg',
+            'form' => 'Tablet',
+            'price' => 10,
+            'sell_price' => 10,
+            'stock' => 5,
+            'discount' => 0,
+        ]);
+
+        $token = $this->postJson('/api/customer/register', [
+            'name' => 'Processing Customer',
+            'gmail' => 'processing@example.com',
+            'phone' => '01700000987',
+            'address' => 'Dhaka',
+            'password' => 'secret123',
+        ])->json('token');
+
+        $payload = [
+            'customer_name' => 'Processing Customer',
+            'customer_phone' => '01700000987',
+            'customer_address' => 'Dhaka',
+            'items' => [['product_id' => $product->id, 'quantity' => 1]],
+        ];
+
+        $this->withToken($token)->postJson('/api/orders', $payload)->assertCreated();
+        Order::firstOrFail()->update(['status' => 'processing']);
+
+        $this->withToken($token)->postJson('/api/orders', $payload)
+            ->assertCreated()
+            ->assertJsonPath('data.combined_order_count', 1);
+
+        $this->assertDatabaseCount('orders', 2);
+        $this->assertDatabaseHas('orders', ['status' => 'processing', 'combined_order_count' => 1]);
+        $this->assertDatabaseHas('orders', ['status' => 'pending', 'combined_order_count' => 1]);
+    }
+
     public function test_mobile_order_cannot_exceed_available_stock(): void
     {
         $product = Product::create([
