@@ -9,7 +9,10 @@
             <h1 class="title">Products</h1>
             <p class="subtitle">{{ $totals['products'] }} medicines match the current filters.</p>
         </div>
-        <a class="btn btn-primary" href="{{ route('products.create') }}">Add Product</a>
+        <div class="actions">
+            <a class="btn btn-outline" href="{{ route('products.pdf', array_filter($filters)) }}">Download PDF</a>
+            <a class="btn btn-primary" href="{{ route('products.create') }}">Add Product</a>
+        </div>
     </div>
 
     @if (session('status'))

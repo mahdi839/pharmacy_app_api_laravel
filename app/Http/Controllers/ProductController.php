@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use App\Models\Product;
-use Illuminate\Http\RedirectResponse;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -29,6 +31,22 @@ class ProductController extends Controller
                 'stock_value' => $products->sum(fn (Product $product): float => $product->stockValue()),
             ],
         ]);
+    }
+
+    public function pdf(Request $request): Response
+    {
+        $filters = $request->only(['name', 'company', 'from', 'to']);
+        $products = Product::query()
+            ->search($filters['name'] ?? null, $filters['company'] ?? null, $filters['from'] ?? null, $filters['to'] ?? null)
+            ->orderBy('name')
+            ->get(['id', 'name', 'mrp_rate', 'sell_price', 'price']);
+
+        return Pdf::loadView('products.pdf', [
+            'products' => $products,
+            'generatedAt' => now(),
+        ])
+            ->setPaper('a4')
+            ->download('med-bangladesh-products-'.now()->format('Y-m-d').'.pdf');
     }
 
     public function create(): View
