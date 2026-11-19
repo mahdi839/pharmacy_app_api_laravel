@@ -16,6 +16,11 @@ return [
     |
     */
 
+    'fcm' => [
+        // Firebase service account key (never commit this file; storage/app is git-ignored).
+        'credentials' => env('FCM_CREDENTIALS', storage_path('app/firebase/firebase-credentials.json')),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccountDeletionController;
 use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\AppNotificationController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CustomerController;
@@ -30,6 +31,11 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/notifications', [AppNotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/create', [AppNotificationController::class, 'create'])->name('notifications.create');
+    Route::post('/notifications', [AppNotificationController::class, 'store'])->name('notifications.store');
+    Route::delete('/notifications/{notification}', [AppNotificationController::class, 'destroy'])->name('notifications.destroy');
     Route::get('/products', [ProductController::class, 'index'])->name('products.index');
     Route::get('/products/pdf', [ProductController::class, 'pdf'])->name('products.pdf');
     Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');

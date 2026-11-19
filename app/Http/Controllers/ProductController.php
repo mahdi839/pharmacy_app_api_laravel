@@ -117,6 +117,13 @@ class ProductController extends Controller
         ]);
     }
 
+    public function apiShow(Product $product): JsonResponse
+    {
+        return response()->json([
+            'data' => $product->load('companyInfo')->apiPayload(),
+        ]);
+    }
+
     private function validatedProduct(Request $request): array
     {
         return $request->validate([
