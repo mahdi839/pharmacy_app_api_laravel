@@ -1,7 +1,8 @@
 <?php
 
-use App\Http\Controllers\CustomerAuthController;
 use App\Http\Controllers\BannerController;
+use App\Http\Controllers\CustomerAuthController;
+use App\Http\Controllers\DeviceTokenController;
 use App\Http\Controllers\HomeSliderController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
@@ -16,3 +17,8 @@ Route::get('/home-sliders', [HomeSliderController::class, 'apiIndex']);
 Route::get('/banners', [BannerController::class, 'apiIndex']);
 Route::get('/products', [ProductController::class, 'apiIndex']);
 Route::post('/orders', [OrderController::class, 'apiStore']);
+
+Route::middleware('throttle:30,1')->group(function (): void {
+    Route::post('/device-tokens', [DeviceTokenController::class, 'store']);
+    Route::delete('/device-tokens', [DeviceTokenController::class, 'destroy']);
+});

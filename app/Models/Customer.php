@@ -31,6 +31,11 @@ class Customer extends Model
         return $this->hasMany(Order::class);
     }
 
+    public function deviceTokens(): HasMany
+    {
+        return $this->hasMany(DeviceToken::class);
+    }
+
     public function refreshApiToken(): string
     {
         $token = Str::random(64);
