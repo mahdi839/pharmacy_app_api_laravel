@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccountDeletionController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AppNotificationController;
+use App\Http\Controllers\AppUpdateController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CustomerController;
@@ -31,6 +32,9 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/app-update', [AppUpdateController::class, 'edit'])->name('app-update.edit');
+    Route::put('/app-update', [AppUpdateController::class, 'update'])->name('app-update.update');
 
     Route::get('/notifications', [AppNotificationController::class, 'index'])->name('notifications.index');
     Route::get('/notifications/create', [AppNotificationController::class, 'create'])->name('notifications.create');

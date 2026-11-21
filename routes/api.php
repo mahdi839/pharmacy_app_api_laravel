@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AppUpdateController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\CustomerAuthController;
 use App\Http\Controllers\CustomerNotificationController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/app-version', [AppUpdateController::class, 'apiShow']);
 Route::post('/customer/register', [CustomerAuthController::class, 'register']);
 Route::post('/customer/login', [CustomerAuthController::class, 'login']);
 Route::get('/customer/me', [CustomerAuthController::class, 'me']);

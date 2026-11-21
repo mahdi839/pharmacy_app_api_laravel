@@ -132,6 +132,7 @@
                 <a class="menu-link {{ request()->routeIs('home-sliders.*') ? 'active' : '' }}" href="{{ route('home-sliders.index') }}"><span class="menu-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></span>Home Sliders</a>
                 <a class="menu-link {{ request()->routeIs('banners.*') ? 'active' : '' }}" href="{{ route('banners.index') }}"><span class="menu-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 16 5-5 4 4 3-3 6 6"/></svg></span>Banners</a>
                 <a class="menu-link {{ request()->routeIs('notifications.*') ? 'active' : '' }}" href="{{ route('notifications.index') }}"><span class="menu-icon"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>Notifications</a>
+                <a class="menu-link {{ request()->routeIs('app-update.*') ? 'active' : '' }}" href="{{ route('app-update.edit') }}"><span class="menu-icon"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 7v7"/><path d="m9 11 3 3 3-3"/></svg></span>App Update</a>
             </nav>
 
             <div class="sidebar-footer">
