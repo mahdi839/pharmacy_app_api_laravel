@@ -36,13 +36,14 @@ class ProductController extends Controller
     public function pdf(Request $request): Response
     {
         $filters = $request->only(['name', 'company', 'from', 'to']);
-        $products = Product::query()
+        $products = Product::with('companyInfo:id,name')
             ->search($filters['name'] ?? null, $filters['company'] ?? null, $filters['from'] ?? null, $filters['to'] ?? null)
             ->orderBy('name')
-            ->get(['id', 'name', 'mrp_rate', 'sell_price', 'price']);
+            ->get(['id', 'name', 'company_id', 'company', 'mrp_rate', 'sell_price', 'price', 'discount']);
 
         return Pdf::loadView('products.pdf', [
             'products' => $products,
+            'filters' => array_filter($filters),
             'generatedAt' => now(),
         ])
             ->setPaper('a4')

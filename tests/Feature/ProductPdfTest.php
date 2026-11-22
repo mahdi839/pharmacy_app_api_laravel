@@ -21,7 +21,7 @@ class ProductPdfTest extends TestCase
         ]);
     }
 
-    private function product(string $name, float $mrp, float $sell): Product
+    private function product(string $name, float $mrp, float $sell, int $discount = 0): Product
     {
         return Product::create([
             'name' => $name,
@@ -33,7 +33,7 @@ class ProductPdfTest extends TestCase
             'mrp_rate' => $mrp,
             'sell_price' => $sell,
             'stock' => 10,
-            'discount' => 0,
+            'discount' => $discount,
         ]);
     }
 
@@ -54,21 +54,23 @@ class ProductPdfTest extends TestCase
         $this->assertStringStartsWith('%PDF', $response->getContent());
     }
 
-    public function test_pdf_view_shows_only_name_mrp_and_sell_price(): void
+    public function test_pdf_view_shows_brand_company_discount_and_prices(): void
     {
-        $this->product('Napa Extra', 25, 22);
+        $this->product('Napa Extra', 25, 22, 12);
 
         $html = view('products.pdf', [
             'products' => Product::all(),
             'generatedAt' => now(),
         ])->render();
 
+        $this->assertStringContainsString('Med Bangladesh', $html);
         $this->assertStringContainsString('Napa Extra', $html);
+        $this->assertStringContainsString('Test Pharma', $html);
+        $this->assertStringContainsString('12% OFF', $html);
         $this->assertStringContainsString('BDT 25.00', $html);
         $this->assertStringContainsString('BDT 22.00', $html);
-        // Purchase price, stock and company must not leak into the PDF.
+        // Purchase price and stock must not leak into the PDF.
         $this->assertStringNotContainsString('BDT 5.00', $html);
-        $this->assertStringNotContainsString('Test Pharma', $html);
         $this->assertStringNotContainsString('Stock', $html);
     }
 
