@@ -14,6 +14,14 @@ class ExampleTest extends TestCase
         $response->assertOk()->assertSee('Download for Android');
     }
 
+    public function test_public_homepage_does_not_link_to_admin_login(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertDontSee('Admin login')
+            ->assertDontSee(route('login'), false);
+    }
+
     public function test_dashboard_requires_admin_login(): void
     {
         $response = $this->get('/dashboard');

@@ -83,9 +83,13 @@
         .filters strong { color: #1f2d28; }
 
         /* ---------- Product table ---------- */
-        table.products { width: 100%; border-collapse: collapse; }
+        /* Rows are rendered in small fixed-layout tables: one giant table makes
+           dompdf exhaust PHP's memory limit on large catalogues. */
+        table.products { width: 100%; border-collapse: collapse; table-layout: fixed; }
         thead { display: table-header-group; }
         tr { page-break-inside: avoid; }
+        .w-sl { width: 5%; } .w-name { width: 29%; } .w-company { width: 24%; }
+        .w-mrp { width: 14%; } .w-disc { width: 12%; } .w-sell { width: 16%; }
         table.products th {
             background: #0f5a40;
             color: #ffffff;
@@ -102,8 +106,8 @@
             border-bottom: 1px solid #e6ece9;
             vertical-align: middle;
         }
-        table.products tbody tr:nth-child(even) td { background: #f8fbf9; }
-        .col-sl { width: 26px; color: #9aa8a2; text-align: center; }
+        table.products tr.alt td { background: #f8fbf9; }
+        .col-sl { color: #9aa8a2; text-align: center; }
         .product-name { font-weight: bold; color: #1f2d28; }
         .company { color: #4d5e57; }
         .num { text-align: right; white-space: nowrap; }
@@ -198,21 +202,34 @@
         </div>
     @endif
 
-    <table class="products">
+    @php
+        // One table per page: the first page holds fewer rows because of the letterhead.
+        $firstPageRows = 22;
+        $rowsPerPage = 28;
+        $pages = $products->isEmpty()
+            ? collect([collect()])
+            : collect([$products->take($firstPageRows)])
+                ->concat($products->slice($firstPageRows)->chunk($rowsPerPage));
+        $serial = 0;
+    @endphp
+
+    @foreach ($pages as $pageRows)
+    <table class="products" @if (! $loop->first) style="page-break-before: always;" @endif>
         <thead>
             <tr>
-                <th class="col-sl">#</th>
-                <th>Product Name</th>
-                <th>Company</th>
-                <th class="num">MRP Rate</th>
-                <th class="center">Discount</th>
-                <th class="num">Sell Price</th>
+                <th class="col-sl w-sl">#</th>
+                <th class="w-name">Product Name</th>
+                <th class="w-company">Company</th>
+                <th class="num w-mrp">MRP Rate</th>
+                <th class="center w-disc">Discount</th>
+                <th class="num w-sell">Sell Price</th>
             </tr>
         </thead>
         <tbody>
-            @forelse ($products as $product)
-                <tr>
-                    <td class="col-sl">{{ $loop->iteration }}</td>
+            @forelse ($pageRows as $product)
+                @php $serial++; @endphp
+                <tr @if ($serial % 2 === 0) class="alt" @endif>
+                    <td class="col-sl">{{ $serial }}</td>
                     <td class="product-name">{{ $product->name }}</td>
                     <td class="company">{{ $product->companyName() ?: '-' }}</td>
                     <td class="num mrp">{{ $product->mrp_rate === null ? '-' : 'BDT '.number_format((float) $product->mrp_rate, 2) }}</td>
@@ -232,5 +249,6 @@
             @endforelse
         </tbody>
     </table>
+    @endforeach
 </body>
 </html>

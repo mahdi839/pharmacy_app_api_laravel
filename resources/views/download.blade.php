@@ -17,7 +17,6 @@
         .brand { font-size: 21px; font-weight: 900; text-decoration: none; }
         .nav-links { display: flex; align-items: center; gap: 22px; font-size: 14px; font-weight: 700; }
         .nav-links a { text-decoration: none; }
-        .admin-link { color: var(--green); }
         .hero { background: linear-gradient(135deg, #f0fbf6 0%, #fff 65%); padding: 84px 0; }
         .hero-grid { display: grid; grid-template-columns: 1.2fr .8fr; align-items: center; gap: 64px; }
         .eyebrow { color: var(--green); font-size: 13px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
@@ -47,7 +46,7 @@
         .footer-row { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
         .footer-links { display: flex; gap: 18px; }
         @media (max-width: 760px) {
-            .nav-links a:not(.admin-link) { display: none; }
+            .nav-links { display: none; }
             .hero { padding: 54px 0; }
             .hero-grid, .features, .steps { grid-template-columns: 1fr; }
             .phone { min-height: 300px; }
@@ -62,7 +61,6 @@
             <div class="nav-links">
                 <a href="#features">Features</a>
                 <a href="#how-it-works">How it works</a>
-                <a class="admin-link" href="{{ route('login') }}">Admin login</a>
             </div>
         </nav>
     </header>

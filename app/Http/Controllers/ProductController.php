@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -17,24 +18,35 @@ class ProductController extends Controller
     public function index(Request $request): View
     {
         $filters = $request->only(['name', 'company', 'from', 'to']);
-        $products = Product::with('companyInfo')
-            ->search($filters['name'] ?? null, $filters['company'] ?? null, $filters['from'] ?? null, $filters['to'] ?? null)
+        $filtered = fn () => Product::query()
+            ->search($filters['name'] ?? null, $filters['company'] ?? null, $filters['from'] ?? null, $filters['to'] ?? null);
+
+        $products = $filtered()
+            ->with('companyInfo')
             ->latest()
-            ->get();
+            ->latest('id')
+            ->paginate(20)
+            ->withQueryString();
 
         return view('products.index', [
             'products' => $products,
             'filters' => $filters,
             'totals' => [
-                'products' => $products->count(),
-                'stock' => $products->sum('stock'),
-                'stock_value' => $products->sum(fn (Product $product): float => $product->stockValue()),
+                'products' => $products->total(),
+                'companies' => $filtered()->distinct()->count('company_id'),
+                'stock' => (int) $filtered()->sum('stock'),
+                'stock_value' => (float) $filtered()->sum(DB::raw('purchase_price * stock')),
             ],
         ]);
     }
 
     public function pdf(Request $request): Response
     {
+        // dompdf keeps the whole document in memory; large catalogues need more
+        // than PHP's default 256M / 30s.
+        ini_set('memory_limit', '1024M');
+        set_time_limit(180);
+
         $filters = $request->only(['name', 'company', 'from', 'to']);
         $products = Product::with('companyInfo:id,name')
             ->search($filters['name'] ?? null, $filters['company'] ?? null, $filters['from'] ?? null, $filters['to'] ?? null)

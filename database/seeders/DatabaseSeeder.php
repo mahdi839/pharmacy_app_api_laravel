@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Admin;
 use App\Models\Company;
 use App\Models\Product;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -17,14 +16,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        Admin::updateOrCreate(
-            ['gmail' => 'admin@gmail.com'],
-            [
-                'name' => 'Pharmacy Admin',
-                'phone' => '01700000000',
-                'password' => 'password',
-            ],
-        );
+        $this->call(AdminSeeder::class);
 
         collect([
             [
