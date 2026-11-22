@@ -42,6 +42,9 @@ Route::middleware('auth')->group(function (): void {
     Route::delete('/notifications/{notification}', [AppNotificationController::class, 'destroy'])->name('notifications.destroy');
     Route::get('/products', [ProductController::class, 'index'])->name('products.index');
     Route::get('/products/pdf', [ProductController::class, 'pdf'])->name('products.pdf');
+    Route::get('/products/pdf/progress/{token}', [ProductController::class, 'pdfProgress'])
+        ->where('token', '[A-Za-z0-9-]{16,64}')
+        ->name('products.pdf.progress');
     Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
     Route::post('/products', [ProductController::class, 'store'])->name('products.store');
     Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');

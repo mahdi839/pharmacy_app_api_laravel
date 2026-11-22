@@ -4,14 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use App\Models\Product;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\ProductPdfBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ProductController extends Controller
 {
@@ -40,26 +40,27 @@ class ProductController extends Controller
         ]);
     }
 
-    public function pdf(Request $request): Response
+    public function pdf(Request $request, ProductPdfBuilder $builder): BinaryFileResponse
     {
-        // dompdf keeps the whole document in memory; large catalogues need more
-        // than PHP's default 256M / 30s.
+        // Fallback rendering in this process (when worker processes are unavailable)
+        // keeps the whole document in memory and can take a while.
         ini_set('memory_limit', '1024M');
         set_time_limit(180);
 
-        $filters = $request->only(['name', 'company', 'from', 'to']);
-        $products = Product::with('companyInfo:id,name')
-            ->search($filters['name'] ?? null, $filters['company'] ?? null, $filters['from'] ?? null, $filters['to'] ?? null)
-            ->orderBy('name')
-            ->get(['id', 'name', 'company_id', 'company', 'mrp_rate', 'sell_price', 'price', 'discount']);
+        $token = $request->query('progress');
+        $token = is_string($token) && preg_match('/^[A-Za-z0-9-]{16,64}$/', $token) ? $token : null;
 
-        return Pdf::loadView('products.pdf', [
-            'products' => $products,
-            'filters' => array_filter($filters),
-            'generatedAt' => now(),
-        ])
-            ->setPaper('a4')
-            ->download('med-bangladesh-products-'.now()->format('Y-m-d').'.pdf');
+        $path = $builder->pdfPath($request->only(['name', 'company', 'from', 'to']), $token);
+
+        return response()->download($path, 'med-bangladesh-products-'.now()->format('Y-m-d').'.pdf', [
+            'Content-Type' => 'application/pdf',
+            'Cache-Control' => 'no-store, private',
+        ]);
+    }
+
+    public function pdfProgress(string $token, ProductPdfBuilder $builder): JsonResponse
+    {
+        return response()->json($builder->progress($token));
     }
 
     public function create(): View

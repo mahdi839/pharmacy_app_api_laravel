@@ -136,82 +136,68 @@
             font-size: 7.5px;
             color: #8a9893;
         }
-        .footer table { width: 100%; border-collapse: collapse; }
-        .footer td { padding: 0; }
         .footer .brand { color: #0f5a40; font-weight: bold; letter-spacing: 0.4px; }
-        .page-number:after { content: "Page " counter(page); }
     </style>
 </head>
 <body>
+    {{--
+        Rendered per chunk by App\Services\ProductPdfBuilder. Expects:
+        $pages (array of pages, each an array of rows: name, company, mrp, discount, sell),
+        $serialStart, $showHeader, $summary, $filters, $generatedLabel, $dateLabel.
+        "Page X of Y" is stamped by the builder after the chunks are merged.
+    --}}
     <div class="footer">
-        <table>
-            <tr>
-                <td><span class="brand">Med Bangladesh</span> &nbsp;&middot;&nbsp; Prices are in Bangladeshi Taka (BDT) and subject to change.</td>
-                <td style="text-align: right;" class="page-number"></td>
-            </tr>
-        </table>
+        <span class="brand">Med Bangladesh</span> &nbsp;&middot;&nbsp; Prices are in Bangladeshi Taka (BDT) and subject to change.
     </div>
 
-    <div class="accent-bar"></div>
-    <div class="accent-bar-thin"></div>
+    @if ($showHeader)
+        <div class="accent-bar"></div>
+        <div class="accent-bar-thin"></div>
 
-    <table class="letterhead">
-        <tr>
-            <td style="width: 52px;"><div class="logo-mark">M</div></td>
-            <td>
-                <div class="brand-name">Med Bangladesh</div>
-                <div class="brand-tagline">Trusted Medicine Supply</div>
-            </td>
-            <td>
-                <div class="doc-title">Product Price List</div>
-                <div class="doc-sub">Generated {{ $generatedAt->format('d M Y, h:i A') }}</div>
-            </td>
-        </tr>
-    </table>
+        <table class="letterhead">
+            <tr>
+                <td style="width: 52px;"><div class="logo-mark">M</div></td>
+                <td>
+                    <div class="brand-name">Med Bangladesh</div>
+                    <div class="brand-tagline">Trusted Medicine Supply</div>
+                </td>
+                <td>
+                    <div class="doc-title">Product Price List</div>
+                    <div class="doc-sub">Generated {{ $generatedLabel }}</div>
+                </td>
+            </tr>
+        </table>
 
-    @php
-        $companyCount = $products->map(fn ($p) => $p->companyName())->filter()->unique()->count();
-        $filters = $filters ?? [];
-    @endphp
+        <table class="summary">
+            <tr>
+                <td class="card">
+                    <div class="label">Total Products</div>
+                    <div class="value">{{ number_format($summary['products']) }}</div>
+                </td>
+                <td class="gap"></td>
+                <td class="card">
+                    <div class="label">Companies</div>
+                    <div class="value">{{ number_format($summary['companies']) }}</div>
+                </td>
+                <td class="gap"></td>
+                <td class="card">
+                    <div class="label">Price List Date</div>
+                    <div class="value small">{{ $dateLabel }}</div>
+                </td>
+            </tr>
+        </table>
 
-    <table class="summary">
-        <tr>
-            <td class="card">
-                <div class="label">Total Products</div>
-                <div class="value">{{ number_format($products->count()) }}</div>
-            </td>
-            <td class="gap"></td>
-            <td class="card">
-                <div class="label">Companies</div>
-                <div class="value">{{ number_format($companyCount) }}</div>
-            </td>
-            <td class="gap"></td>
-            <td class="card">
-                <div class="label">Price List Date</div>
-                <div class="value small">{{ $generatedAt->format('d F Y') }}</div>
-            </td>
-        </tr>
-    </table>
-
-    @if (! empty($filters))
-        <div class="filters">
-            Filtered by:
-            @foreach ($filters as $key => $value)
-                <strong>{{ ucfirst($key) }}</strong>: {{ $value }}@if (! $loop->last) &nbsp;&middot;&nbsp; @endif
-            @endforeach
-        </div>
+        @if (! empty($filters))
+            <div class="filters">
+                Filtered by:
+                @foreach ($filters as $key => $value)
+                    <strong>{{ ucfirst($key) }}</strong>: {{ $value }}@if (! $loop->last) &nbsp;&middot;&nbsp; @endif
+                @endforeach
+            </div>
+        @endif
     @endif
 
-    @php
-        // One table per page: the first page holds fewer rows because of the letterhead.
-        $firstPageRows = 22;
-        $rowsPerPage = 28;
-        $pages = $products->isEmpty()
-            ? collect([collect()])
-            : collect([$products->take($firstPageRows)])
-                ->concat($products->slice($firstPageRows)->chunk($rowsPerPage));
-        $serial = 0;
-    @endphp
+    @php $serial = $serialStart - 1; @endphp
 
     @foreach ($pages as $pageRows)
     <table class="products" @if (! $loop->first) style="page-break-before: always;" @endif>
@@ -226,21 +212,21 @@
             </tr>
         </thead>
         <tbody>
-            @forelse ($pageRows as $product)
+            @forelse ($pageRows as $row)
                 @php $serial++; @endphp
                 <tr @if ($serial % 2 === 0) class="alt" @endif>
                     <td class="col-sl">{{ $serial }}</td>
-                    <td class="product-name">{{ $product->name }}</td>
-                    <td class="company">{{ $product->companyName() ?: '-' }}</td>
-                    <td class="num mrp">{{ $product->mrp_rate === null ? '-' : 'BDT '.number_format((float) $product->mrp_rate, 2) }}</td>
+                    <td class="product-name">{{ $row['name'] }}</td>
+                    <td class="company">{{ $row['company'] ?: '-' }}</td>
+                    <td class="num mrp">{{ $row['mrp'] === null ? '-' : 'BDT '.number_format($row['mrp'], 2) }}</td>
                     <td class="center">
-                        @if ((int) $product->discount > 0)
-                            <span class="badge">{{ (int) $product->discount }}% OFF</span>
+                        @if ($row['discount'] > 0)
+                            <span class="badge">{{ $row['discount'] }}% OFF</span>
                         @else
                             <span class="muted">&mdash;</span>
                         @endif
                     </td>
-                    <td class="num sell">BDT {{ number_format($product->effectiveSellPrice(), 2) }}</td>
+                    <td class="num sell">BDT {{ number_format($row['sell'], 2) }}</td>
                 </tr>
             @empty
                 <tr>
